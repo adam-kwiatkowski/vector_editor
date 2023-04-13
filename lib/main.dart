@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:vector_editor/graphics/tools.dart';
 
 import 'graphics/drawing.dart';
 
@@ -34,28 +35,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var tools = [
-    {
-      'icon': Icons.north_west_outlined,
-      'label': 'Move',
-    },
-    {
-      'icon': Icons.shape_line_outlined,
-      'label': 'Draw line',
-    },
-    {
-      'icon': Icons.circle_outlined,
-      'label': 'Circle',
-    },
-    {
-      'icon': Icons.pentagon_outlined,
-      'label': 'Polygon',
-    },
-  ];
   var selectedTool = 0;
 
   ui.Image? image;
-
+  Drawing drawing = Drawing(const Size(100, 100), objects: [
+    Point(const Offset(20, 20), 10),
+    Point(const Offset(80, 80), 10),
+  ]);
 
   @override
   Widget build(BuildContext context) {
@@ -66,24 +52,16 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Stack(
           children: [
-            GestureDetector(
-              onTapDown: (details) {
-                final box = context.findRenderObject() as RenderBox;
-                final point = box.globalToLocal(details.globalPosition);
-                var drawing = Drawing(MediaQuery.of(context).size, [Point(point, 10)]);
-                drawing.toImage().then((value) {
-                  setState(() {
-                    image = value;
-                  });
-                });
-              },
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                child: RawImage(
-                  image: image,
+            RepaintBoundary(
+              child: GestureDetector(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: CustomPaint(
+                    painter: DrawingPainter(drawing),
+                  ),
                 ),
-              ),
+              )
             ),
             Positioned.fill(
               bottom: 25,
@@ -123,10 +101,10 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (var i = 0; i < tools.length; i++)
+              for (var i = 0; i < presetTools.length; i++)
                 ToolButton(
-                  icon: tools[i]['icon'] as IconData,
-                  label: tools[i]['label'] as String,
+                  icon: presetTools[i].icon,
+                  label: presetTools[i].name,
                   selected: i == selectedTool,
                   onPressed: () {
                     setState(() {
@@ -136,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                 child: VerticalDivider(
                   color: Theme.of(context).colorScheme.outlineVariant,
                   width: 1,
@@ -150,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                 child: VerticalDivider(
                   color: Theme.of(context).colorScheme.outlineVariant,
                   width: 1,
@@ -171,6 +149,21 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ));
   }
+}
+
+class DrawingPainter extends CustomPainter {
+  final Drawing drawing;
+
+  DrawingPainter(this.drawing);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawing.size = size;
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+
 }
 
 class ToolButton extends StatelessWidget {
@@ -224,17 +217,3 @@ class ToolButton extends StatelessWidget {
   }
 }
 
-// class MyPainter extends CustomPainter {
-//   final Drawing drawing;
-//
-//   MyPainter(this.drawing);
-//
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//
-//   }
-//
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-//
-// }

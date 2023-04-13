@@ -2,16 +2,38 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+
 class Drawing {
   final List<GraphicsObject> objects;
   Size size;
+  bool enableGizmos = false;
+  GraphicsObject? selectedObject;
 
-  Drawing(this.size, this.objects);
+  Drawing(this.size, {this.objects = const []});
 
   void drawObjects(Uint8List pixels) {
     for (final object in objects) {
       object.draw(pixels, size);
     }
+  }
+
+  void drawGizmos(Uint8List pixels) {
+    for (final object in objects) {
+      object.drawGizmos(pixels, size);
+    }
+
+    Point(const Offset(0, 0), 5).draw(pixels, size);
+    Point(Offset(size.width, size.height), 5).draw(pixels, size);
+  }
+
+  GraphicsObject? getObjectAt(Offset offset) {
+    for (final object in objects) {
+      if (object.contains(offset)) {
+        return object;
+      }
+    }
+    return null;
   }
 
   Future<Image> toImage() async {
@@ -21,7 +43,12 @@ class Drawing {
         (index) => 0,
       ),
     );
+    for (int i = 0; i < pixels.lengthInBytes; i += 4) {
+      pixels[i+3] = 255;
+    }
+
     drawObjects(pixels);
+    if (enableGizmos) drawGizmos(pixels);
 
     final completer = Completer<Image>();
     decodeImageFromPixels(
@@ -37,11 +64,13 @@ class Drawing {
 }
 
 abstract class GraphicsObject {
-  final Offset offset;
+  Offset offset;
 
   GraphicsObject(this.offset);
 
   void draw(Uint8List pixels, Size size);
+  void drawGizmos(Uint8List pixels, Size size) {}
+  bool contains(Offset offset) => false;
 }
 
 class Point extends GraphicsObject {
@@ -58,7 +87,7 @@ class Point extends GraphicsObject {
 
     for (var i = -radius; i < radius; i++) {
       for (var j = -radius; j < radius; j++) {
-        if (i * i + j * j > radius * radius) continue;
+        if (i * i + j * j >= radius * radius) continue;
         if (x + i >= 0 && x + i < width && y + j >= 0 && y + j < height) {
           final index = (x + i + (y + j) * width) * 4;
           pixels[index] = 255;
@@ -68,5 +97,10 @@ class Point extends GraphicsObject {
         }
       }
     }
+  }
+
+  @override
+  bool contains(Offset offset) {
+    return (this.offset - offset).distance < radius;
   }
 }
