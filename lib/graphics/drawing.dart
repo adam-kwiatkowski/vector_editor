@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-class Drawing {
+class DrawingA extends ChangeNotifier {
   final List<GraphicsObject> objects;
-  Size size;
-  bool enableGizmos = false;
+  ui.Size size;
   GraphicsObject? selectedObject;
+  final ValueNotifier<ui.Image?> imageNotifier = ValueNotifier(null);
 
-  Drawing(this.size, {this.objects = const []});
+  DrawingA(this.size, {this.objects = const []});
 
   void drawObjects(Uint8List pixels) {
     for (final object in objects) {
@@ -18,16 +19,26 @@ class Drawing {
     }
   }
 
-  void drawGizmos(Uint8List pixels) {
-    for (final object in objects) {
-      object.drawGizmos(pixels, size);
-    }
-
-    Point(const Offset(0, 0), 5).draw(pixels, size);
-    Point(Offset(size.width, size.height), 5).draw(pixels, size);
+  void updateDrawing() async {
+    var image = await toImage();
+    imageNotifier.value = image;
+    notifyListeners();
   }
 
-  GraphicsObject? getObjectAt(Offset offset) {
+  void updateObject(GraphicsObject object) {
+    int index = objects.indexOf(object);
+    if (index != -1) {
+      objects[index] = object;
+      updateDrawing();
+    }
+  }
+
+  void addObject(GraphicsObject object) {
+    objects.add(object);
+    updateDrawing();
+  }
+
+  GraphicsObject? getObjectAt(ui.Offset offset) {
     for (final object in objects) {
       if (object.contains(offset)) {
         return object;
@@ -36,7 +47,7 @@ class Drawing {
     return null;
   }
 
-  Future<Image> toImage() async {
+  Future<ui.Image> toImage() async {
     final pixels = Uint8List.fromList(
       List.generate(
         size.width.toInt() * size.height.toInt() * 4,
@@ -48,38 +59,43 @@ class Drawing {
     }
 
     drawObjects(pixels);
-    if (enableGizmos) drawGizmos(pixels);
 
-    final completer = Completer<Image>();
-    decodeImageFromPixels(
+    final completer = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
       pixels,
       size.width.toInt(),
       size.height.toInt(),
-      PixelFormat.rgba8888,
-      completer.complete,
+      ui.PixelFormat.rgba8888,
+          (image) => completer.complete(image),
     );
 
     return completer.future;
   }
+
+  Future<ImageProvider> toImageProvider() async {
+    final pixels = Uint8List(size.width.toInt() * size.height.toInt() * 4);
+    drawObjects(pixels);
+    final image = MemoryImage(pixels);
+    return image;
+  }
 }
 
 abstract class GraphicsObject {
-  Offset offset;
+  ui.Offset offset;
 
   GraphicsObject(this.offset);
 
-  void draw(Uint8List pixels, Size size);
-  void drawGizmos(Uint8List pixels, Size size) {}
-  bool contains(Offset offset) => false;
+  void draw(Uint8List pixels, ui.Size size);
+  bool contains(ui.Offset offset) => false;
 }
 
 class Point extends GraphicsObject {
   final int radius;
 
-  Point(Offset offset, this.radius) : super(offset);
+  Point(ui.Offset offset, this.radius) : super(offset);
 
   @override
-  void draw(Uint8List pixels, Size size) {
+  void draw(Uint8List pixels, ui.Size size) {
     final x = offset.dx.toInt();
     final y = offset.dy.toInt();
     final width = size.width.toInt();
@@ -100,7 +116,7 @@ class Point extends GraphicsObject {
   }
 
   @override
-  bool contains(Offset offset) {
+  bool contains(ui.Offset offset) {
     return (this.offset - offset).distance < radius;
   }
 }

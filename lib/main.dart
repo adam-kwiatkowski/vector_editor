@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var selectedTool = 0;
 
   ui.Image? image;
-  Drawing drawing = Drawing(const Size(100, 100), objects: [
+  DrawingA drawing = DrawingA(const Size(500, 500), objects: [
     Point(const Offset(20, 20), 10),
     Point(const Offset(80, 80), 10),
   ]);
@@ -53,16 +53,24 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Stack(
           children: [
             RepaintBoundary(
-              child: GestureDetector(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: CustomPaint(
-                    painter: DrawingPainter(drawing),
-                  ),
-                ),
-              )
-            ),
+                child: GestureDetector(
+                  onTapUp: (details) {
+                    final offset = details.localPosition;
+                    drawing.addObject(Point(offset, 5));
+                  },
+                  onPanStart: (details) {
+                    final offset = details.localPosition;
+                    drawing.addObject(Point(offset, 5));
+                  },
+                  onPanUpdate: (details) {
+                    final offset = details.localPosition;
+                    drawing.addObject(Point(offset, 5));
+                  },
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+              ),
+            )),
             Positioned.fill(
               bottom: 25,
               child: Align(
@@ -75,6 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+
+
 
   Widget buildToolbar(BuildContext context) {
     return Container(
@@ -114,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               Padding(
                 padding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                 child: VerticalDivider(
                   color: Theme.of(context).colorScheme.outlineVariant,
                   width: 1,
@@ -128,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Padding(
                 padding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                 child: VerticalDivider(
                   color: Theme.of(context).colorScheme.outlineVariant,
                   width: 1,
@@ -149,21 +159,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ));
   }
-}
-
-class DrawingPainter extends CustomPainter {
-  final Drawing drawing;
-
-  DrawingPainter(this.drawing);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    drawing.size = size;
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-
 }
 
 class ToolButton extends StatelessWidget {
