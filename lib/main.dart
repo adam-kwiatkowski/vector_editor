@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => Drawing(const Size(500, 500))),
+        ChangeNotifierProvider(create: (_) => Drawing(const Size(0, 0))),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
@@ -44,9 +44,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var drawing = context.watch<Drawing>();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          Tooltip(
+            message: 'Antialiasing',
+            waitDuration: const Duration(milliseconds: 300),
+            child: Checkbox(
+              value: drawing.antiAlias,
+              onChanged: (value) {
+                setState(() {
+                  drawing.antiAlias = value!;
+                });
+              },
+            ),
+          )
+        ],
       ),
       body: Center(
         child: Stack(

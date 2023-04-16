@@ -38,6 +38,7 @@ class DrawingWidgetState extends State<DrawingWidget> {
                       image: snapshot.data!,
                       width: drawing.size.width,
                       height: drawing.size.height,
+                      filterQuality: FilterQuality.none,
                     );
                   } else {
                     return const SizedBox();

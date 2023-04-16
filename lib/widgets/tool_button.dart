@@ -86,27 +86,13 @@ Widget buildToolbar(BuildContext context, int selectedTool,
                 selected: i == selectedTool,
                 onPressed: () => onSelectedToolChanged(i),
               ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-              child: VerticalDivider(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                width: 1,
-                thickness: 1,
-              ),
-            ),
+            buildDivider(context),
             ToolButton(
               icon: Icons.color_lens_outlined,
               label: 'Color',
               onPressed: () {},
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-              child: VerticalDivider(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                width: 1,
-                thickness: 1,
-              ),
-            ),
+            buildDivider(context),
             ToolButton(
               icon: Icons.undo_outlined,
               label: 'Undo',
@@ -120,4 +106,15 @@ Widget buildToolbar(BuildContext context, int selectedTool,
           ],
         ),
       ));
+}
+
+Padding buildDivider(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+    child: VerticalDivider(
+      color: Theme.of(context).colorScheme.outlineVariant,
+      width: 1,
+      thickness: 1,
+    ),
+  );
 }
