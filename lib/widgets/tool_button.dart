@@ -1,5 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../graphics/drawing.dart';
 import '../graphics/tools.dart';
 
 class ToolButton extends StatelessWidget {
@@ -55,6 +59,7 @@ class ToolButton extends StatelessWidget {
 
 Widget buildToolbar(BuildContext context, int selectedTool,
     Function(int) onSelectedToolChanged) {
+  final drawing = context.watch<Drawing>();
   return Container(
       height: 58,
       decoration: BoxDecoration(
@@ -90,18 +95,21 @@ Widget buildToolbar(BuildContext context, int selectedTool,
             ToolButton(
               icon: Icons.color_lens_outlined,
               label: 'Color',
-              onPressed: () {},
+              onPressed: () {
+                final selectedObject = drawing.selectedObject;
+                if (selectedObject != null) {
+                  selectedObject.color =
+                      Color((Random().nextDouble() * 0xFFFFFF).toInt())
+                          .withOpacity(1.0);
+                  drawing.updateObject(selectedObject);
+                }
+              },
             ),
             buildDivider(context),
             ToolButton(
-              icon: Icons.undo_outlined,
-              label: 'Undo',
-              onPressed: () {},
-            ),
-            ToolButton(
-              icon: Icons.redo_outlined,
-              label: 'Redo',
-              onPressed: () {},
+              label: 'Clear',
+              icon: Icons.delete_outline,
+              onPressed: () => drawing.clear(),
             ),
           ],
         ),

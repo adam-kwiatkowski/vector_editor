@@ -66,9 +66,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Stack(
           children: [
-            const Positioned.fill(
+            Positioned.fill(
                 child: Align(
-                    alignment: Alignment.topLeft, child: DrawingWidget())),
+                    alignment: Alignment.topLeft, child: DrawingWidget(selectedTool))),
             Positioned.fill(
               bottom: 25,
               child: Align(

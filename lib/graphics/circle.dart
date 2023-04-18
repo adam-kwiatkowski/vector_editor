@@ -8,7 +8,7 @@ import 'package:vector_editor/graphics/utils.dart';
 import 'drawing.dart';
 
 class Circle extends Shape {
-  final int radius;
+  int radius;
 
   Circle(ui.Offset offset, this.radius, {super.color}) : super(offset);
 
@@ -104,21 +104,23 @@ class Circle extends Shape {
 
   void _drawWuCircle(
       Uint8List pixels, ui.Size size, double x, double y, double alpha) {
-    _drawPixel(pixels, size, x.round(), y.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, x.round() - 1, y.round(), alpha: alpha);
-    _drawPixel(pixels, size, y.round(), x.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, y.round(), x.round() - 1, alpha: alpha);
-    _drawPixel(pixels, size, -x.round(), y.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, -x.round() + 1, y.round(), alpha: alpha);
-    _drawPixel(pixels, size, -y.round(), x.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, -y.round(), x.round() - 1, alpha: alpha);
-    _drawPixel(pixels, size, x.round(), -y.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, x.round() - 1, -y.round(), alpha: alpha);
-    _drawPixel(pixels, size, y.round(), -x.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, y.round(), -x.round() + 1, alpha: alpha);
-    _drawPixel(pixels, size, -x.round(), -y.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, -x.round() + 1, -y.round(), alpha: alpha);
-    _drawPixel(pixels, size, -y.round(), -x.round(), alpha: (1 - alpha));
-    _drawPixel(pixels, size, -y.round(), -x.round() + 1, alpha: alpha);
+    final dx = x.round();
+    final dy = y.round();
+    _drawPixel(pixels, size, dx, dy, alpha: (1 - alpha));
+    _drawPixel(pixels, size, dx - 1, dy, alpha: alpha);
+    _drawPixel(pixels, size, dy, dx, alpha: (1 - alpha));
+    _drawPixel(pixels, size, dy, dx - 1, alpha: alpha);
+    _drawPixel(pixels, size, -dx, dy, alpha: (1 - alpha));
+    _drawPixel(pixels, size, -dx + 1, dy, alpha: alpha);
+    _drawPixel(pixels, size, -dy, dx, alpha: (1 - alpha));
+    _drawPixel(pixels, size, -dy, dx - 1, alpha: alpha);
+    _drawPixel(pixels, size, dx, -dy, alpha: (1 - alpha));
+    _drawPixel(pixels, size, dx - 1, -dy, alpha: alpha);
+    _drawPixel(pixels, size, dy, -dx, alpha: (1 - alpha));
+    _drawPixel(pixels, size, dy, -dx + 1, alpha: alpha);
+    _drawPixel(pixels, size, -dx, -dy, alpha: (1 - alpha));
+    _drawPixel(pixels, size, -dx + 1, -dy, alpha: alpha);
+    _drawPixel(pixels, size, -dy, -dx, alpha: (1 - alpha));
+    _drawPixel(pixels, size, -dy, -dx + 1, alpha: alpha);
   }
 }

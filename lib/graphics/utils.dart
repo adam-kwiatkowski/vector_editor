@@ -17,8 +17,8 @@ Color blendColors(Color foreground, Color background) {
   final alpha = foreground.alpha / 255;
   final red = (foreground.red * alpha + background.red * (1 - alpha)).round();
   final green =
-  (foreground.green * alpha + background.green * (1 - alpha)).round();
+      (foreground.green * alpha + background.green * (1 - alpha)).round();
   final blue =
-  (foreground.blue * alpha + background.blue * (1 - alpha)).round();
+      (foreground.blue * alpha + background.blue * (1 - alpha)).round();
   return Color.fromARGB(255, red, green, blue);
 }

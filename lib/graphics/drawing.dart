@@ -6,12 +6,25 @@ import 'package:flutter/material.dart';
 
 import 'circle.dart';
 import 'line.dart';
+import 'polygon.dart';
 
 class Drawing extends ChangeNotifier {
   Drawing(this.size);
 
   ui.Size size;
-  final List<Shape> _objects = [];
+  final List<Shape> _objects = [
+    Point(const Offset(5, 5), 5),
+    Line(const Offset(5, 5), const Offset(200, 100), color: Colors.green),
+    Line(const Offset(200, 500), const Offset(300, 495), color: Colors.green),
+    Line(const Offset(100, 350), const Offset(300, 350), color: Colors.blue),
+    Circle(const Offset(200, 350), 100),
+    Polygon([
+      const Offset(100, 100),
+      const Offset(200, 100),
+      const Offset(200, 200),
+      const Offset(100, 200),
+    ], const Offset(150, 150)),
+  ];
 
   List<Shape> get objects => _objects;
   Shape? selectedObject;
@@ -29,6 +42,25 @@ class Drawing extends ChangeNotifier {
       if (object.contains(offset)) return object;
     }
     return null;
+  }
+
+  void selectObject(Shape object) {
+    selectedObject = object;
+    notifyListeners();
+  }
+
+  void deselectObject() {
+    selectedObject = null;
+    notifyListeners();
+  }
+
+  void updateObject(Shape object) {
+    notifyListeners();
+  }
+
+  void moveObject(Shape object, ui.Offset offset) {
+    object.move(offset);
+    notifyListeners();
   }
 
   void addObject(Shape object) {
@@ -50,17 +82,6 @@ class Drawing extends ChangeNotifier {
     final pixels = Uint8List(size.width.toInt() * size.height.toInt() * 4);
     pixels.fillRange(0, pixels.length, 255);
 
-    Point(const Offset(5, 5), 5).draw(pixels, size);
-    Point(Offset(size.width - 5, size.height - 5), 5).draw(pixels, size);
-    Line(const Offset(5, 5), Offset(size.width - 5, size.height - 5),
-            color: Colors.green)
-        .draw(pixels, size, antiAlias: antiAlias);
-    Line(const Offset(200, 500), const Offset(300, 495), color: Colors.green)
-        .draw(pixels, size, antiAlias: antiAlias);
-    Line(const Offset(100, 350), const Offset(300, 350), color: Colors.blue)
-        .draw(pixels, size, antiAlias: false);
-    Circle(const Offset(200, 350), 100)
-        .draw(pixels, size, antiAlias: antiAlias);
     for (var object in _objects) {
       object.draw(pixels, size, antiAlias: antiAlias);
     }
@@ -83,6 +104,10 @@ abstract class Shape {
   Shape(this.offset, {this.color = Colors.black});
 
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false});
+
+  void move(ui.Offset offset) {
+    this.offset += offset;
+  }
 
   bool contains(ui.Offset offset) => false;
 }

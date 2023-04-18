@@ -7,8 +7,8 @@ import 'package:vector_editor/graphics/utils.dart';
 import 'drawing.dart';
 
 class Line extends Shape {
-  final ui.Offset start;
-  final ui.Offset end;
+  ui.Offset start;
+  ui.Offset end;
 
   Line(this.start, this.end, {super.color}) : super(start);
 
@@ -21,18 +21,34 @@ class Line extends Shape {
     }
   }
 
+  @override
+  bool contains(ui.Offset offset) {
+    //   true if offset lies at most 10 pixels from the line
+    var dx = end.dx - start.dx;
+    var dy = end.dy - start.dy;
+    var d = (dy * offset.dx -
+            dx * offset.dy +
+            end.dx * start.dy -
+            end.dy * start.dx)
+        .abs();
+    return d <= 10;
+  }
+
   void ddaLine(ui.Size size, Uint8List pixels) {
     var dy = end.dy - start.dy;
     var dx = end.dx - start.dx;
-    var m = dy / dx;
+    var steps = dy.abs() > dx.abs() ? dy.abs() : dx.abs();
+
+    dx = dx / steps;
+    dy = dy / steps;
+
+    var x = start.dx;
     var y = start.dy;
-    for (var x = start.dx; x < end.dx; x++) {
-      final index = (x + y.round() * size.width).toInt() * 4;
-      pixels[index] = color.red;
-      pixels[index + 1] = color.green;
-      pixels[index + 2] = color.blue;
-      pixels[index + 3] = color.alpha;
-      y += m;
+
+    for (var i = 0; i <= steps; i++) {
+      _drawPixel(size, pixels, x, y, 1.0);
+      x += dx;
+      y += dy;
     }
   }
 
@@ -133,6 +149,16 @@ class Line extends Shape {
   void _drawPixel(
       ui.Size size, Uint8List pixels, double x, double y, double c) {
     final index = (x.floor() + y.floor() * size.width).toInt() * 4;
+    if (index < 0 ||
+        index >= pixels.length ||
+        c < 0 ||
+        c > 1 ||
+        x < 0 ||
+        x >= size.width ||
+        y < 0 ||
+        y >= size.height) {
+      return;
+    }
     Color backgroundColor =
         getBackgroundColor(pixels, size, x.floor(), y.floor());
     Color blendedColor = blendColors(color.withOpacity(c), backgroundColor);
@@ -141,5 +167,12 @@ class Line extends Shape {
     pixels[index + 1] = blendedColor.green;
     pixels[index + 2] = blendedColor.blue;
     pixels[index + 3] = blendedColor.alpha;
+  }
+
+  @override
+  void move(ui.Offset offset) {
+    start += offset;
+    end += offset;
+    this.offset += offset;
   }
 }

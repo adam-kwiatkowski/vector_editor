@@ -3,11 +3,14 @@ import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vector_editor/graphics/tools.dart';
 
 import '../graphics/drawing.dart';
 
 class DrawingWidget extends StatefulWidget {
-  const DrawingWidget({super.key});
+  const DrawingWidget(this.selectedTool, {super.key});
+
+  final int selectedTool;
 
   @override
   DrawingWidgetState createState() => DrawingWidgetState();
@@ -16,17 +19,27 @@ class DrawingWidget extends StatefulWidget {
 class DrawingWidgetState extends State<DrawingWidget> {
   @override
   Widget build(BuildContext context) {
+    final tool = presetTools[widget.selectedTool];
     return LayoutBuilder(
       builder: (context, constraints) => Consumer<Drawing>(
         builder: (context, drawing, child) {
           drawing.size = Size(constraints.maxWidth, constraints.maxHeight);
           return RepaintBoundary(
             child: GestureDetector(
+              onTapDown: (details) {
+                tool.onTapDown(details.localPosition, drawing);
+              },
               onTapUp: (details) {
-                drawing.addObject(Point(details.localPosition, 5));
+                tool.onTapUp(details.localPosition, drawing);
+              },
+              onPanStart: (details) {
+                tool.onPanStart(details.localPosition, drawing);
               },
               onPanUpdate: (details) {
-                drawing.addObject(Point(details.localPosition, 5));
+                tool.onPanUpdate(details.localPosition, drawing);
+              },
+              onPanEnd: (details) {
+                tool.onPanEnd(drawing);
               },
               child: FutureBuilder<ui.Image>(
                 future: drawing.toImage(),
