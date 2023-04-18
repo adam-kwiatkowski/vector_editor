@@ -4,6 +4,7 @@ import 'circle.dart';
 import 'drawing.dart';
 import 'line.dart';
 import 'polygon.dart';
+import 'semicircle_line.dart';
 
 abstract class Tool {
   final String name;
@@ -149,9 +150,41 @@ class PolygonTool extends Tool {
   }
 }
 
+class SemicircleLineTool extends Tool {
+  SemicircleLineTool() : super('Semicircle Line', Icons.shape_line_outlined);
+
+  @override
+  void onPanStart(Offset offset, Drawing drawing) {
+    final line = SemicircleLine(offset, offset, 5);
+    drawing.addObject(line);
+    drawing.selectObject(line);
+  }
+
+  @override
+  void onPanUpdate(Offset offset, Drawing drawing) {
+    if (drawing.selectedObject != null) {
+      final line = drawing.selectedObject as SemicircleLine;
+      line.end = offset;
+
+      if (line.start == line.end) {
+        drawing.removeObject(line);
+        drawing.deselectObject();
+      } else {
+        drawing.updateObject(line);
+      }
+    }
+  }
+
+  @override
+  void onPanEnd(Drawing drawing) {
+    drawing.deselectObject();
+  }
+}
+
 var presetTools = [
   MoveTool(),
   LineTool(),
   CircleTool(),
   PolygonTool(),
+  SemicircleLineTool(),
 ];

@@ -9,8 +9,18 @@ import 'drawing.dart';
 
 class Circle extends Shape {
   int radius;
+  bool full;
+  double startAngle;
+  double endAngle;
+  double relativeStartAngle;
 
-  Circle(ui.Offset offset, this.radius, {super.color}) : super(offset);
+  Circle(ui.Offset offset, this.radius,
+      {super.color,
+      this.full = true,
+      this.startAngle = 0,
+      this.endAngle = 2 * pi,
+      this.relativeStartAngle = 0})
+      : super(offset);
 
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = true}) {
@@ -66,6 +76,17 @@ class Circle extends Shape {
     final y = offset.dy.toInt() + j;
     final width = size.width.toInt();
     final height = size.height.toInt();
+
+    if (!full) {
+      double angle = atan2(j.toDouble(), i.toDouble());
+      if (startAngle < 0) startAngle += 2 * pi;
+      if (startAngle > endAngle) endAngle += 2 * pi;
+
+      if (angle < 0) angle += 2 * pi;
+      if ((angle < startAngle || angle > endAngle) &&
+          (angle + 2 * pi < startAngle || angle + 2 * pi > endAngle)) return;
+    }
+
     if (x >= 0 && x < width && y >= 0 && y < height) {
       final index = (x + y * width) * 4;
 

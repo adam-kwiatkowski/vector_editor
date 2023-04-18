@@ -68,7 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             Positioned.fill(
                 child: Align(
-                    alignment: Alignment.topLeft, child: DrawingWidget(selectedTool))),
+                    alignment: Alignment.topLeft,
+                    child: DrawingWidget(selectedTool))),
             Positioned.fill(
               bottom: 25,
               child: Align(
