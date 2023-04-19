@@ -6,22 +6,34 @@ import 'line.dart';
 
 class Polygon extends Shape {
   final List<ui.Offset> points;
-  bool closed = false;
+  bool closed;
+  int thickness;
 
-  Polygon(this.points, ui.Offset offset) : super(offset);
+  Polygon(this.points, ui.Offset offset, {this.closed = false, this.thickness = 1}) : super(offset);
+
+  @override
+  List<Handle> get handles {
+    final handles = <Handle>[];
+    for (var i = 0; i < points.length; i++) {
+      handles.add(Handle(points[i], onMove: (offset) {
+        points[i] += offset;
+      }));
+    }
+    return handles;
+  }
 
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false}) {
     for (var i = 0; i < points.length - 1; i++) {
       final point1 = points[i];
       final point2 = points[i + 1];
-      final line = Line(point1, point2, color: color);
+      final line = Line(point1, point2, color: color, thickness: thickness);
       line.draw(pixels, size, antiAlias: antiAlias);
     }
     if (closed) {
       final point1 = points[points.length - 1];
       final point2 = points[0];
-      final line = Line(point1, point2, color: color);
+      final line = Line(point1, point2, color: color, thickness: thickness);
       line.draw(pixels, size, antiAlias: antiAlias);
     }
   }
@@ -47,5 +59,14 @@ class Polygon extends Shape {
       points[i] += offset;
     }
     this.offset += offset;
+  }
+
+  void removePointAt(ui.Offset offset) {
+    for (var i = 0; i < points.length; i++) {
+      if ((points[i] - offset).distance < 10) {
+        points.removeAt(i);
+        break;
+      }
+    }
   }
 }

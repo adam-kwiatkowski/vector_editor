@@ -45,14 +45,17 @@ class DrawingWidgetState extends State<DrawingWidget> {
                 future: drawing.toImage(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    return RawImage(
-                      alignment: Alignment.topLeft,
-                      fit: BoxFit.none,
-                      image: snapshot.data!,
-                      width: drawing.size.width,
-                      height: drawing.size.height,
-                      filterQuality: FilterQuality.none,
-                    );
+                    return Stack(children: [
+                      RawImage(
+                        alignment: Alignment.topLeft,
+                        fit: BoxFit.none,
+                        image: snapshot.data!,
+                        width: drawing.size.width,
+                        height: drawing.size.height,
+                        filterQuality: FilterQuality.none,
+                      ),
+                      Text(drawing.toString())
+                    ]);
                   } else {
                     return const SizedBox();
                   }

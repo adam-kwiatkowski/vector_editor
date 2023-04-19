@@ -33,28 +33,40 @@ class MoveTool extends Tool {
 
   @override
   void onTapDown(Offset offset, Drawing drawing) {
-    final object = drawing.getObjectAt(offset);
-
-    drawing.deselectObject();
-    if (object != null) {
-      drawing.selectObject(object);
+    if (drawing.selectedObject != null) {
+      final handle = drawing.getHandleAt(offset);
+      if (handle != null) {
+        drawing.selectHandle(handle);
+        return;
+      }
     }
+
+    drawing.selectObjectAt(offset);
   }
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {
     _startOffset = offset;
-    final object = drawing.getObjectAt(offset);
-
-    drawing.deselectObject();
-    if (object != null) {
-      drawing.selectObject(object);
+    if (drawing.selectedObject != null) {
+      final handle = drawing.getHandleAt(offset);
+      if (handle != null) {
+        drawing.selectHandle(handle);
+        return;
+      }
     }
+
+    if (drawing.selectedObject != null) {
+      if (drawing.selectedObject!.contains(offset)) return;
+    }
+    drawing.selectObjectAt(offset);
   }
 
   @override
   void onPanUpdate(Offset offset, Drawing drawing) {
-    if (drawing.selectedObject != null && _startOffset != null) {
+    if (drawing.selectedHandle != null && _startOffset != null) {
+      drawing.moveHandle(drawing.selectedHandle!, offset - _startOffset!);
+      _startOffset = offset;
+    } else if (drawing.selectedObject != null && _startOffset != null) {
       drawing.moveObject(drawing.selectedObject!, offset - _startOffset!);
       _startOffset = offset;
     }
@@ -63,6 +75,7 @@ class MoveTool extends Tool {
   @override
   void onPanEnd(Drawing drawing) {
     // drawing.deselectObject();
+    drawing.deselectHandle();
   }
 }
 
@@ -181,10 +194,37 @@ class SemicircleLineTool extends Tool {
   }
 }
 
+class EraserTool extends Tool {
+  EraserTool() : super('Eraser', Icons.backspace_outlined);
+
+  @override
+  void onTapDown(Offset offset, Drawing drawing) {
+    if (drawing.selectedObject != null) {
+      if (drawing.selectedObject! is Polygon) {
+        final polygon = drawing.selectedObject as Polygon;
+        polygon.removePointAt(offset);
+        drawing.updateObject(polygon);
+        if (polygon.points.length < 2) {
+          drawing.deselectObject();
+          drawing.removeObject(polygon);
+        }
+        return;
+      }
+    }
+
+    final object = drawing.getObjectAt(offset);
+    if (object != null) {
+      drawing.deselectObject();
+      drawing.removeObject(object);
+    }
+  }
+}
+
 var presetTools = [
   MoveTool(),
   LineTool(),
   CircleTool(),
   PolygonTool(),
   SemicircleLineTool(),
+  EraserTool(),
 ];

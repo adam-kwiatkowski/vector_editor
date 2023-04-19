@@ -23,6 +23,22 @@ class Circle extends Shape {
       : super(offset);
 
   @override
+  List<Handle> get handles => [
+        Handle(
+          offset + Offset(radius.toDouble(), 0),
+          onMove: (offset) {
+            radius += offset.dx.toInt();
+            if (radius < 0) radius = 0;
+          },
+        ),
+      ];
+
+  @override
+  String toString() {
+    return 'Circle{offset: $offset, radius: $radius, color: $color, full: $full, startAngle: $startAngle, endAngle: $endAngle, relativeStartAngle: $relativeStartAngle}';
+  }
+
+  @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = true}) {
     if (antiAlias) {
       wuCircle(pixels, size);

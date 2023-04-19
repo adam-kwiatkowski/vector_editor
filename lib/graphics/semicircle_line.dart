@@ -14,6 +14,36 @@ class SemicircleLine extends Shape {
   SemicircleLine(this.start, this.end, this.N, {super.color}) : super(start);
 
   @override
+  List<Handle> get handles => [
+        Handle(
+          start,
+          onMove: (offset) {
+            start += offset;
+          },
+        ),
+        Handle(
+          end,
+          onMove: (offset) {
+            end += offset;
+          },
+        ),
+      ];
+
+  @override
+  void move(ui.Offset offset) {
+    start += offset;
+    end += offset;
+  }
+
+  @override
+  bool contains(ui.Offset offset) {
+    var distance = (end - start).distance;
+    var distance1 = (offset - start).distance;
+    var distance2 = (offset - end).distance;
+    return (distance1 + distance2 - distance).abs() < 5;
+  }
+
+  @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false}) {
     var line = Line(start, end, color: color);
     line.draw(pixels, size, antiAlias: antiAlias);

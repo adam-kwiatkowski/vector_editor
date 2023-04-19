@@ -9,12 +9,33 @@ import 'drawing.dart';
 class Line extends Shape {
   ui.Offset start;
   ui.Offset end;
+  int thickness;
 
-  Line(this.start, this.end, {super.color}) : super(start);
+  Line(this.start, this.end, {super.color, this.thickness = 1}) : super(start);
+
+  @override
+  List<Handle> get handles => [
+        Handle(
+          start,
+          onMove: (offset) {
+            start += offset;
+          },
+        ),
+        Handle(
+          end,
+          onMove: (offset) {
+            end += offset;
+          },
+        ),
+      ];
 
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = true}) {
-    if (antiAlias) {
+    if (thickness != 1) {
+      final brush = Brush.rounded(thickness, color: color);
+      brushLine(size, pixels, brush);
+    }
+    else if (antiAlias) {
       wuLine(size, pixels);
     } else {
       ddaLine(size, pixels);
@@ -23,15 +44,29 @@ class Line extends Shape {
 
   @override
   bool contains(ui.Offset offset) {
-    //   true if offset lies at most 10 pixels from the line
-    var dx = end.dx - start.dx;
+  //   true if point is within 5 pixels of the line
+    final distance = (end - start).distance;
+    final distance1 = (offset - start).distance;
+    final distance2 = (offset - end).distance;
+    return (distance1 + distance2 - distance).abs() < 5;
+  }
+
+  void brushLine(ui.Size size, Uint8List pixels, Brush brush) {
     var dy = end.dy - start.dy;
-    var d = (dy * offset.dx -
-            dx * offset.dy +
-            end.dx * start.dy -
-            end.dy * start.dx)
-        .abs();
-    return d <= 10;
+    var dx = end.dx - start.dx;
+    var steps = dy.abs() > dx.abs() ? dy.abs() : dx.abs();
+
+    dx = dx / steps;
+    dy = dy / steps;
+
+    var x = start.dx;
+    var y = start.dy;
+
+    for (var i = 0; i <= steps; i++) {
+      brush.draw(pixels, size, Offset(x, y));
+      x += dx;
+      y += dy;
+    }
   }
 
   void ddaLine(ui.Size size, Uint8List pixels) {
