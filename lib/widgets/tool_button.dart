@@ -1,6 +1,5 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 
 import '../graphics/drawing.dart';
@@ -96,13 +95,35 @@ Widget buildToolbar(BuildContext context, int selectedTool,
               icon: Icons.color_lens_outlined,
               label: 'Color',
               onPressed: () {
-                final selectedObject = drawing.selectedObject;
-                if (selectedObject != null) {
-                  selectedObject.color =
-                      Color((Random().nextDouble() * 0xFFFFFF).toInt())
-                          .withOpacity(1.0);
-                  drawing.updateObject(selectedObject);
-                }
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Pick a color'),
+                      content: SingleChildScrollView(
+                        child: BlockPicker(
+                          pickerColor: drawing.color,
+                          onColorChanged: (color) {
+                            drawing.color = color;
+                          },
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+            ToolButton(
+              label: 'Line thickness: ${drawing.thickness}',
+              icon: Icons.line_weight_outlined,
+              onPressed: () {
+                drawing.thickness = (drawing.thickness % 10) + 1;
               },
             ),
             buildDivider(context),

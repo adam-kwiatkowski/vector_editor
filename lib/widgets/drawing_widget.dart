@@ -54,7 +54,7 @@ class DrawingWidgetState extends State<DrawingWidget> {
                         height: drawing.size.height,
                         filterQuality: FilterQuality.none,
                       ),
-                      Text(drawing.toString())
+                      // Text(drawing.toString())
                     ]);
                   } else {
                     return const SizedBox();

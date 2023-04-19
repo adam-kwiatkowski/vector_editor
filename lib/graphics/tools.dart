@@ -84,7 +84,8 @@ class LineTool extends Tool {
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {
-    final line = Line(offset, offset);
+    final line = Line(offset, offset,
+        color: drawing.color, thickness: drawing.thickness);
     drawing.addObject(line);
     drawing.selectObject(line);
   }
@@ -115,7 +116,7 @@ class CircleTool extends Tool {
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {
-    final circle = Circle(offset, 0);
+    final circle = Circle(offset, 0, color: drawing.color);
     drawing.deselectObject();
     drawing.addObject(circle);
     drawing.selectObject(circle);
@@ -156,7 +157,8 @@ class PolygonTool extends Tool {
         }
       }
     } else {
-      final polygon = Polygon([offset], offset);
+      final polygon = Polygon([offset], offset,
+          color: drawing.color, thickness: drawing.thickness);
       drawing.addObject(polygon);
       drawing.selectObject(polygon);
     }
@@ -168,7 +170,7 @@ class SemicircleLineTool extends Tool {
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {
-    final line = SemicircleLine(offset, offset, 5);
+    final line = SemicircleLine(offset, offset, 5, color: drawing.color);
     drawing.addObject(line);
     drawing.selectObject(line);
   }

@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'circle.dart';
 import 'line.dart';
 import 'polygon.dart';
 
@@ -13,23 +11,40 @@ class Drawing extends ChangeNotifier {
   Drawing(this.size);
 
   ui.Size size;
-  final List<Shape> _objects = [
-    Line(const Offset(200, 500), const Offset(300, 495), color: Colors.green, thickness: 5),
-    Line(const Offset(100, 350), const Offset(300, 350), color: Colors.blue),
-    Circle(const Offset(200, 350), 100),
-    Circle(const Offset(200, 350), 50,
-        full: false, startAngle: pi, endAngle: 2 * pi),
-    Polygon([
-      const Offset(100, 100),
-      const Offset(200, 100),
-      const Offset(200, 200),
-      const Offset(100, 200),
-    ], const Offset(150, 150), closed: true, thickness: 4),
-  ];
+  final List<Shape> _objects = [];
 
   List<Shape> get objects => _objects;
   Shape? selectedObject;
   Handle? selectedHandle;
+
+  Color _color = Colors.black;
+
+  Color get color => _color;
+
+  set color(Color value) {
+    _color = value;
+    if (selectedObject != null) {
+      selectedObject!.color = value;
+    }
+    notifyListeners();
+  }
+
+  int _thickness = 1;
+
+  int get thickness => _thickness;
+
+  set thickness(int value) {
+    _thickness = value;
+    if (selectedObject != null) {
+      if (selectedObject is Line) {
+        (selectedObject as Line).thickness = value;
+      } else if (selectedObject is Polygon) {
+        (selectedObject as Polygon).thickness = value;
+      }
+    }
+    notifyListeners();
+  }
+
   bool _antiAlias = true;
 
   bool get antiAlias => _antiAlias;
@@ -219,10 +234,12 @@ class Handle {
     final x = offset.dx.toInt();
     final y = offset.dy.toInt();
 
-  //   draw a 5x5 white square with a black outline
     for (var i = -5; i <= 5; i++) {
       for (var j = -5; j <= 5; j++) {
-        if (x + i >= 0 && x + i < size.width.toInt() && y + j >= 0 && y + j < size.height.toInt()) {
+        if (x + i >= 0 &&
+            x + i < size.width.toInt() &&
+            y + j >= 0 &&
+            y + j < size.height.toInt()) {
           final index = (x + i + (y + j) * size.width.toInt()) * 4;
           pixels[index] = 0;
           pixels[index + 1] = 0;
@@ -233,7 +250,10 @@ class Handle {
     }
     for (var i = -4; i < 5; i++) {
       for (var j = -4; j < 5; j++) {
-        if (x + i >= 0 && x + i < size.width.toInt() && y + j >= 0 && y + j < size.height.toInt()) {
+        if (x + i >= 0 &&
+            x + i < size.width.toInt() &&
+            y + j >= 0 &&
+            y + j < size.height.toInt()) {
           final index = (x + i + (y + j) * size.width.toInt()) * 4;
           pixels[index] = 255;
           pixels[index + 1] = 255;

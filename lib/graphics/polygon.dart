@@ -9,7 +9,9 @@ class Polygon extends Shape {
   bool closed;
   int thickness;
 
-  Polygon(this.points, ui.Offset offset, {this.closed = false, this.thickness = 1}) : super(offset);
+  Polygon(this.points, ui.Offset offset,
+      {this.closed = false, this.thickness = 1, super.color})
+      : super(offset);
 
   @override
   List<Handle> get handles {

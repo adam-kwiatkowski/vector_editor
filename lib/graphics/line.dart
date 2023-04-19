@@ -34,8 +34,7 @@ class Line extends Shape {
     if (thickness != 1) {
       final brush = Brush.rounded(thickness, color: color);
       brushLine(size, pixels, brush);
-    }
-    else if (antiAlias) {
+    } else if (antiAlias) {
       wuLine(size, pixels);
     } else {
       ddaLine(size, pixels);
@@ -44,7 +43,7 @@ class Line extends Shape {
 
   @override
   bool contains(ui.Offset offset) {
-  //   true if point is within 5 pixels of the line
+    //   true if point is within 5 pixels of the line
     final distance = (end - start).distance;
     final distance1 = (offset - start).distance;
     final distance2 = (offset - end).distance;
