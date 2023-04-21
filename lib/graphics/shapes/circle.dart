@@ -5,7 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:vector_editor/graphics/utils.dart';
 
-import 'drawing.dart';
+import '../drawing.dart';
+import 'shape.dart';
 
 class Circle extends Shape {
   int radius;
@@ -159,5 +160,32 @@ class Circle extends Shape {
     _drawPixel(pixels, size, -dx + 1, -dy, alpha: alpha);
     _drawPixel(pixels, size, -dy, -dx, alpha: (1 - alpha));
     _drawPixel(pixels, size, -dy, -dx + 1, alpha: alpha);
+  }
+
+  static Shape? fromJson(Map<String, dynamic> json) {
+    if (json['type'] == 'circle') {
+      return Circle(
+        Offset(json['offset']['dx'], json['offset']['dy']),
+        json['radius'],
+        color: Color(json['color']),
+        full: json['full'],
+        startAngle: json['startAngle'],
+        endAngle: json['endAngle'],
+      );
+    }
+    return null;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'type': 'circle',
+      'offset': {'dx': offset.dx, 'dy': offset.dy},
+      'radius': radius,
+      'color': color.value,
+      'full': full,
+      'startAngle': startAngle,
+      'endAngle': endAngle,
+    };
   }
 }

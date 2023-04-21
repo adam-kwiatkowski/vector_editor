@@ -2,9 +2,10 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import '../drawing.dart';
 import 'circle.dart';
-import 'drawing.dart';
 import 'line.dart';
+import 'shape.dart';
 
 class SemicircleLine extends Shape {
   final int N;
@@ -72,5 +73,28 @@ class SemicircleLine extends Shape {
           endAngle: angleEnd);
       circle.draw(pixels, size, antiAlias: antiAlias);
     }
+  }
+
+  static Shape? fromJson(Map<String, dynamic> json) {
+    if (json['type'] == 'SemicircleLine') {
+      return SemicircleLine(
+        ui.Offset(json['start']['x'], json['start']['y']),
+        ui.Offset(json['end']['x'], json['end']['y']),
+        json['N'],
+        color: ui.Color(json['color']),
+      );
+    }
+    return null;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'type': 'SemicircleLine',
+      'start': {'x': start.dx, 'y': start.dy},
+      'end': {'x': end.dx, 'y': end.dy},
+      'N': N,
+      'color': color.value,
+    };
   }
 }

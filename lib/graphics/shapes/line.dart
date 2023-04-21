@@ -4,7 +4,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:vector_editor/graphics/utils.dart';
 
-import 'drawing.dart';
+import '../drawing.dart';
+import 'shape.dart';
 
 class Line extends Shape {
   ui.Offset start;
@@ -208,5 +209,28 @@ class Line extends Shape {
     start += offset;
     end += offset;
     this.offset += offset;
+  }
+
+  static Shape? fromJson(Map<String, dynamic> json) {
+    if (json['type'] == 'line') {
+      return Line(
+        Offset(json['start']['dx'], json['start']['dy']),
+        Offset(json['end']['dx'], json['end']['dy']),
+        color: Color(json['color']),
+        thickness: json['thickness'],
+      );
+    }
+    return null;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'type': 'line',
+      'start': {'dx': start.dx, 'dy': start.dy},
+      'end': {'dx': end.dx, 'dy': end.dy},
+      'color': color.value,
+      'thickness': thickness,
+    };
   }
 }

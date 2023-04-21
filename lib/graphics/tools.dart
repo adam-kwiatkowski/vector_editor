@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'circle.dart';
 import 'drawing.dart';
-import 'line.dart';
-import 'polygon.dart';
-import 'semicircle_line.dart';
+import 'shapes/circle.dart';
+import 'shapes/line.dart';
+import 'shapes/polygon.dart';
+import 'shapes/semicircle_line.dart';
 
 abstract class Tool {
   final String name;
@@ -47,6 +47,7 @@ class MoveTool extends Tool {
   @override
   void onPanStart(Offset offset, Drawing drawing) {
     _startOffset = offset;
+
     if (drawing.selectedObject != null) {
       final handle = drawing.getHandleAt(offset);
       if (handle != null) {
@@ -81,6 +82,9 @@ class MoveTool extends Tool {
 
 class LineTool extends Tool {
   LineTool() : super('Line', Icons.draw_outlined);
+
+  @override
+  get cursor => SystemMouseCursors.precise;
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {

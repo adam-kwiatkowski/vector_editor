@@ -126,12 +126,6 @@ Widget buildToolbar(BuildContext context, int selectedTool,
                 drawing.thickness = (drawing.thickness % 10) + 1;
               },
             ),
-            buildDivider(context),
-            ToolButton(
-              label: 'Clear',
-              icon: Icons.delete_outline,
-              onPressed: () => drawing.clear(),
-            ),
           ],
         ),
       ));

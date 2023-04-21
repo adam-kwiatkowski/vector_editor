@@ -1,8 +1,9 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'drawing.dart';
+import '../drawing.dart';
 import 'line.dart';
+import 'shape.dart';
 
 class Polygon extends Shape {
   final List<ui.Offset> points;
@@ -70,5 +71,33 @@ class Polygon extends Shape {
         break;
       }
     }
+  }
+
+  static Shape? fromJson(Map<String, dynamic> json) {
+    if (json['type'] == 'polygon') {
+      final points = <ui.Offset>[];
+      for (var i = 0; i < json['points'].length; i++) {
+        final point = json['points'][i];
+        points.add(ui.Offset(point['x'], point['y']));
+      }
+      return Polygon(points, ui.Offset.zero,
+          closed: json['closed'], thickness: json['thickness']);
+    }
+    return null;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final points = <Map<String, double>>[];
+    for (var i = 0; i < this.points.length; i++) {
+      final point = this.points[i];
+      points.add({'x': point.dx, 'y': point.dy});
+    }
+    return {
+      'type': 'polygon',
+      'points': points,
+      'closed': closed,
+      'thickness': thickness,
+    };
   }
 }

@@ -4,16 +4,31 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'line.dart';
-import 'polygon.dart';
+import 'shapes/circle.dart';
+import 'shapes/line.dart';
+import 'shapes/polygon.dart';
+import 'shapes/shape.dart';
 
 class Drawing extends ChangeNotifier {
   Drawing(this.size);
 
   ui.Size size;
-  final List<Shape> _objects = [];
+  final List<Shape> _objects = [
+    Circle(const ui.Offset(400, 200), 50, color: Colors.blue),
+    Circle(const ui.Offset(500, 200), 50, color: Colors.yellow),
+    Circle(const ui.Offset(600, 200), 50, color: Colors.black),
+    Circle(const ui.Offset(450, 250), 50, color: Colors.green),
+    Circle(const ui.Offset(550, 250), 50, color: Colors.red),
+  ];
 
   List<Shape> get objects => _objects;
+
+  set objects(List<Shape> value) {
+    _objects.clear();
+    _objects.addAll(value);
+    notifyListeners();
+  }
+
   Shape? selectedObject;
   Handle? selectedHandle;
 
@@ -162,65 +177,6 @@ class Drawing extends ChangeNotifier {
   void deselectHandle() {
     selectedHandle = null;
     notifyListeners();
-  }
-}
-
-abstract class Shape {
-  ui.Offset offset;
-  Color color;
-
-  List<Handle> get handles => [];
-
-  Shape(this.offset, {this.color = Colors.black});
-
-  void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false});
-
-  bool contains(ui.Offset offset) => false;
-
-  void move(ui.Offset offset) {
-    this.offset += offset;
-
-    for (var handle in handles) {
-      handle.offset += offset;
-    }
-  }
-
-  void drawHandles(Uint8List pixels, ui.Size size) {
-    for (var handle in handles) {
-      handle.draw(pixels, size);
-    }
-  }
-}
-
-class Point extends Shape {
-  final int radius;
-
-  Point(ui.Offset offset, this.radius) : super(offset);
-
-  @override
-  void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false}) {
-    final x = offset.dx.toInt();
-    final y = offset.dy.toInt();
-    final width = size.width.toInt();
-    final height = size.height.toInt();
-
-    for (var i = -radius; i < radius; i++) {
-      for (var j = -radius; j < radius; j++) {
-        if (i * i + j * j >= radius * radius) continue;
-        if (x + i >= 0 && x + i < width && y + j >= 0 && y + j < height) {
-          final index = (x + i + (y + j) * width) * 4;
-          pixels[index] = 255;
-          pixels[index + 1] = 0;
-          pixels[index + 2] = 0;
-          pixels[index + 3] = 255;
-        }
-      }
-    }
-  }
-
-  @override
-  bool contains(ui.Offset offset) {
-    return (this.offset - offset).distance < radius;
   }
 }
 
