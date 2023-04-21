@@ -26,6 +26,8 @@ class Drawing extends ChangeNotifier {
   set objects(List<Shape> value) {
     _objects.clear();
     _objects.addAll(value);
+    selectedObject = null;
+    selectedHandle = null;
     notifyListeners();
   }
 

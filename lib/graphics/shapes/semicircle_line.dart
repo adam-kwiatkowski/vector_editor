@@ -76,7 +76,7 @@ class SemicircleLine extends Shape {
   }
 
   static Shape? fromJson(Map<String, dynamic> json) {
-    if (json['type'] == 'SemicircleLine') {
+    if (json['type'] == 'semicircle_line') {
       return SemicircleLine(
         ui.Offset(json['start']['x'], json['start']['y']),
         ui.Offset(json['end']['x'], json['end']['y']),
@@ -90,7 +90,7 @@ class SemicircleLine extends Shape {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'type': 'SemicircleLine',
+      'type': 'semicircle_line',
       'start': {'x': start.dx, 'y': start.dy},
       'end': {'x': end.dx, 'y': end.dy},
       'N': N,

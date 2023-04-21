@@ -81,7 +81,7 @@ class Polygon extends Shape {
         points.add(ui.Offset(point['x'], point['y']));
       }
       return Polygon(points, ui.Offset.zero,
-          closed: json['closed'], thickness: json['thickness']);
+          closed: json['closed'], thickness: json['thickness'], color: ui.Color(json['color']));
     }
     return null;
   }
@@ -98,6 +98,7 @@ class Polygon extends Shape {
       'points': points,
       'closed': closed,
       'thickness': thickness,
+      'color': color.value,
     };
   }
 }
