@@ -46,6 +46,15 @@ class Drawing extends ChangeNotifier {
     notifyListeners();
   }
 
+  Color _canvasColor = Colors.white;
+
+  Color get canvasColor => _canvasColor;
+
+  set canvasColor(Color value) {
+    _canvasColor = value;
+    notifyListeners();
+  }
+
   int _thickness = 1;
 
   int get thickness => _thickness;
@@ -150,7 +159,12 @@ class Drawing extends ChangeNotifier {
 
   Uint8List toBytes() {
     final pixels = Uint8List(size.width.toInt() * size.height.toInt() * 4);
-    pixels.fillRange(0, pixels.length, 255);
+    for (var i = 0; i < pixels.length; i += 4) {
+      pixels[i] = _canvasColor.red;
+      pixels[i + 1] = _canvasColor.green;
+      pixels[i + 2] = _canvasColor.blue;
+      pixels[i + 3] = _canvasColor.alpha;
+    }
 
     for (var object in _objects) {
       object.draw(pixels, size, antiAlias: antiAlias);

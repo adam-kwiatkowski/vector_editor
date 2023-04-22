@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vector_editor/widgets/drawing_widget.dart';
+import 'package:vector_editor/widgets/file_drop_overlay.dart';
 import 'package:vector_editor/widgets/tool_button.dart';
 
 import 'graphics/drawing.dart';
@@ -18,20 +19,31 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final ValueNotifier<ThemeMode> themeMode =
+      ValueNotifier(ThemeMode.light);
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => Drawing(const Size(0, 0))),
       ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.light,
-        ),
-        home: const MyHomePage(title: 'Vector Painter'),
-      ),
+      child: ValueListenableBuilder<ThemeMode>(
+          valueListenable: themeMode,
+          builder: (context, currentMode, _) {
+            return MaterialApp(
+              title: 'Flutter Demo',
+              theme: ThemeData(
+                useMaterial3: true,
+              ),
+              darkTheme: ThemeData(
+                brightness: Brightness.dark,
+                useMaterial3: true,
+              ),
+              themeMode: currentMode,
+              home: const MyHomePage(title: 'Vector Editor'),
+            );
+          }),
     );
   }
 }
@@ -55,6 +67,22 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
+          Tooltip(
+            message: 'Dark mode',
+            child: IconButton(
+              icon: MyApp.themeMode.value == ThemeMode.dark
+                  ? const Icon(Icons.dark_mode)
+                  : const Icon(Icons.light_mode),
+              onPressed: () {
+                bool isDark = MyApp.themeMode.value == ThemeMode.dark;
+                MyApp.themeMode.value =
+                    isDark ? ThemeMode.light : ThemeMode.dark;
+                setState(() {
+                  drawing.canvasColor = isDark ? Colors.white : Colors.black12;
+                });
+              },
+            ),
+          ),
           Tooltip(
             message: 'Save',
             child: IconButton(
@@ -87,13 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 if (result != null) {
                   final file = File(result.files.single.path!);
-                  final json = jsonDecode(await file.readAsString());
-                  final objects = JsonConverter.fromJsonList(json);
-                  // convert from List<Shape?> to List<Shape>
-                  final objectsNotNull = objects.whereType<Shape>().toList();
-                  setState(() {
-                    drawing.objects = objectsNotNull;
-                  });
+                  await loadFile(file, drawing);
                 }
               },
             ),
@@ -136,7 +158,11 @@ class _MyHomePageState extends State<MyHomePage> {
             Positioned.fill(
                 child: Align(
                     alignment: Alignment.topLeft,
-                    child: DrawingWidget(selectedTool))),
+                    child: FileDropOverlay(
+                        onDrop: (file) async {
+                          await loadFile(file, drawing);
+                        },
+                        child: DrawingWidget(selectedTool)))),
             Positioned.fill(
               bottom: 25,
               child: Align(
@@ -152,5 +178,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  Future<void> loadFile(File file, Drawing drawing) async {
+    final json = jsonDecode(await file.readAsString());
+    final objects = JsonConverter.fromJsonList(json);
+
+    final objectsNotNull = objects.whereType<Shape>().toList();
+    setState(() {
+      drawing.objects = objectsNotNull;
+    });
   }
 }

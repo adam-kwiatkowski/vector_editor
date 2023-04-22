@@ -38,6 +38,8 @@ dependencies:
   provider: ^6.0.5
   flutter_colorpicker: ^1.0.3
   file_picker: ^5.2.10
+  desktop_drop: ^0.4.1
+  cross_file: ^0.3.3+4
 
 dev_dependencies:
   flutter_test:
