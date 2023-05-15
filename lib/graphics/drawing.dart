@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'shapes/circle.dart';
 import 'shapes/line.dart';
 import 'shapes/polygon.dart';
 import 'shapes/shape.dart';
@@ -13,13 +12,7 @@ class Drawing extends ChangeNotifier {
   Drawing(this.size);
 
   ui.Size size;
-  final List<Shape> _objects = [
-    Circle(const ui.Offset(400, 200), 50, color: Colors.blue),
-    Circle(const ui.Offset(500, 200), 50, color: Colors.yellow),
-    Circle(const ui.Offset(600, 200), 50, color: Colors.black),
-    Circle(const ui.Offset(450, 250), 50, color: Colors.green),
-    Circle(const ui.Offset(550, 250), 50, color: Colors.red),
-  ];
+  final List<Shape> _objects = [];
 
   List<Shape> get objects => _objects;
 

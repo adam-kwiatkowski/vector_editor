@@ -20,10 +20,6 @@ abstract class Shape {
 
   void move(ui.Offset offset) {
     this.offset += offset;
-
-    for (var handle in handles) {
-      handle.offset += offset;
-    }
   }
 
   void drawHandles(Uint8List pixels, ui.Size size) {

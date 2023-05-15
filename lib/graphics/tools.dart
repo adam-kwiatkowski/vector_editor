@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vector_editor/graphics/shapes/rectangle.dart';
 
 import 'drawing.dart';
 import 'shapes/circle.dart';
@@ -136,6 +137,38 @@ class CircleTool extends Tool {
   }
 }
 
+class RectangleTool extends Tool {
+  RectangleTool() : super('Rectangle', Icons.square_outlined);
+
+  @override
+  void onPanStart(Offset offset, Drawing drawing) {
+    final rectangle = Rectangle(offset, offset,
+        color: drawing.color);
+    drawing.addObject(rectangle);
+    drawing.selectObject(rectangle);
+  }
+
+  @override
+  void onPanUpdate(Offset offset, Drawing drawing) {
+    if (drawing.selectedObject != null) {
+      final rectangle = drawing.selectedObject as Rectangle;
+      rectangle.end = offset;
+
+      if (rectangle.start == rectangle.end) {
+        drawing.removeObject(rectangle);
+        drawing.deselectObject();
+      } else {
+        drawing.updateObject(rectangle);
+      }
+    }
+  }
+
+  @override
+  void onPanEnd(Drawing drawing) {
+    drawing.deselectObject();
+  }
+}
+
 class PolygonTool extends Tool {
   PolygonTool() : super('Polygon', Icons.pentagon_outlined);
 
@@ -230,6 +263,7 @@ var presetTools = [
   MoveTool(),
   LineTool(),
   CircleTool(),
+  RectangleTool(),
   PolygonTool(),
   SemicircleLineTool(),
   EraserTool(),
