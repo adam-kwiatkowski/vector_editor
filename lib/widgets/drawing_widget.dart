@@ -1,10 +1,8 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
-import 'package:vector_editor/graphics/shapes/line.dart';
-import 'package:vector_editor/graphics/shapes/polygon.dart';
+import 'package:vector_editor/graphics/shapes/shape_context_menu_visitor.dart';
 import 'package:vector_editor/graphics/tools.dart';
 
 import '../graphics/drawing.dart';
@@ -82,124 +80,25 @@ class DrawingWidgetState extends State<DrawingWidget> {
     List<PopupMenuEntry<dynamic>> menuOptions = [
       PopupMenuItem(
         child: ListTile(
-          leading: const Icon(Icons.delete_forever_outlined),
-          title: const Text('Clear all'),
+          leading: const Icon(Icons.delete_outlined),
+          title: const Text('Delete'),
           dense: true,
           contentPadding: EdgeInsets.zero,
           titleTextStyle: Theme.of(context).textTheme.labelLarge,
         ),
         onTap: () {
-          setState(() {
-            drawing.clear();
-          });
+          if (drawing.selectedObject != null) {
+            drawing.removeObject(drawing.selectedObject!);
+          }
         },
       ),
+      const PopupMenuDivider(),
     ];
 
     if (drawing.selectedObject != null) {
-      menuOptions.add(const PopupMenuDivider());
-      menuOptions.addAll([
-        PopupMenuItem(
-          child: ListTile(
-            leading: const Icon(Icons.delete_outline),
-            title: const Text('Delete'),
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            titleTextStyle: Theme.of(context).textTheme.labelLarge,
-          ),
-          onTap: () {
-            setState(() {
-              drawing.removeObject(drawing.selectedObject!);
-            });
-          },
-        ),
-        PopupMenuItem(
-          child: ListTile(
-            leading: const Icon(Icons.color_lens_outlined),
-            title: const Text('Outline color'),
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            titleTextStyle: Theme.of(context).textTheme.labelLarge,
-          ),
-          onTap: () {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                        title: const Text('Outline color'),
-                        content: SingleChildScrollView(
-                          child: BlockPicker(
-                            pickerColor: drawing.selectedObject!.outlineColor,
-                            onColorChanged: (color) {
-                              setState(() {
-                                drawing.selectedObject!.outlineColor = color;
-                              });
-                            },
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ));
-            });
-          },
-        ),
-        PopupMenuItem(
-          child: ListTile(
-            leading: const Icon(Icons.line_weight),
-            title: const Text('Outline width'),
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            titleTextStyle: Theme.of(context).textTheme.labelLarge,
-          ),
-          onTap: () {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              var selectedObject = drawing.selectedObject;
-              var thickness = selectedObject is Line
-                  ? selectedObject.thickness
-                  : selectedObject is Polygon
-                      ? selectedObject.thickness
-                      : 1;
-              showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                        title: const Text('Outline width'),
-                        content: SingleChildScrollView(
-                          child: Slider(
-                            value: thickness.toDouble(),
-                            min: 1,
-                            max: 10,
-                            divisions: 9,
-                            label: thickness
-                                .round()
-                                .toString(),
-                            onChanged: (value) {
-                              setState(() {
-                                if (selectedObject != null) {
-                                  if (selectedObject is Line) {
-                                    (selectedObject).thickness = value.round();
-                                  } else if (selectedObject is Polygon) {
-                                    (selectedObject).thickness = value.round();
-                                  }
-                                }
-                              });
-                            },
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ));
-            });
-          },
-        )
-      ]);
+      ShapeContextMenuVisitor visitor = ShapeContextMenuVisitor(context, drawing);
+      drawing.selectedObject!.accept(visitor);
+      menuOptions.addAll(visitor.items);
     }
 
     showMenu(

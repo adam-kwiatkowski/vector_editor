@@ -2,6 +2,8 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:vector_editor/graphics/shapes/shape_visitor.dart';
+
 import '../drawing.dart';
 import 'circle.dart';
 import 'line.dart';
@@ -96,5 +98,10 @@ class SemicircleLine extends Shape {
       'N': N,
       'color': outlineColor.value,
     };
+  }
+
+  @override
+  void accept(ShapeVisitor visitor) {
+    visitor.visitSemicircleLine(this);
   }
 }

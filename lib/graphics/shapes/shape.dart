@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:vector_editor/graphics/shapes/shape_visitor.dart';
 
 import '../drawing.dart';
 
@@ -28,7 +29,8 @@ abstract class Shape {
     }
   }
 
-  static Shape? fromJson(Map<String, dynamic> json) => null;
+  void accept(ShapeVisitor visitor);
 
+  static Shape? fromJson(Map<String, dynamic> json) => null;
   Map<String, dynamic> toJson();
 }

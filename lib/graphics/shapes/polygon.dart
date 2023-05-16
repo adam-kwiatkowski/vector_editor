@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:vector_editor/graphics/shapes/shape_visitor.dart';
+
 import '../drawing.dart';
 import 'line.dart';
 import 'shape.dart';
@@ -9,9 +11,10 @@ class Polygon extends Shape {
   final List<ui.Offset> points;
   bool closed;
   int thickness;
+  ui.Color? fillColor;
 
   Polygon(this.points, ui.Offset offset,
-      {this.closed = false, this.thickness = 1, super.outlineColor})
+      {this.closed = false, this.thickness = 1, this.fillColor, super.outlineColor})
       : super(offset);
 
   @override
@@ -102,5 +105,10 @@ class Polygon extends Shape {
       'thickness': thickness,
       'color': outlineColor.value,
     };
+  }
+
+  @override
+  void accept(ShapeVisitor visitor) {
+    visitor.visitPolygon(this);
   }
 }

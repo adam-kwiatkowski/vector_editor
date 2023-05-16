@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:vector_editor/graphics/shapes/shape_visitor.dart';
 import 'package:vector_editor/graphics/utils.dart';
 
 import '../drawing.dart';
@@ -187,5 +188,10 @@ class Circle extends Shape {
       'startAngle': startAngle,
       'endAngle': endAngle,
     };
+  }
+
+  @override
+  void accept(ShapeVisitor visitor) {
+    visitor.visitCircle(this);
   }
 }

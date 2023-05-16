@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:vector_editor/graphics/shapes/shape_visitor.dart';
+
 import '../drawing.dart';
 import 'line.dart';
 import 'shape.dart';
@@ -8,8 +10,9 @@ import 'shape.dart';
 class Rectangle extends Shape {
   ui.Offset start;
   ui.Offset end;
+  int thickness;
 
-  Rectangle(this.start, this.end, {super.outlineColor}) : super(start);
+  Rectangle(this.start, this.end, {super.outlineColor, this.thickness = 1}) : super(start);
 
   @override
   List<Handle> get handles => [
@@ -45,10 +48,10 @@ class Rectangle extends Shape {
 
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false}) {
-    Line(start, ui.Offset(end.dx, start.dy), outlineColor: outlineColor).draw(pixels, size);
-    Line(ui.Offset(end.dx, start.dy), end, outlineColor: outlineColor).draw(pixels, size);
-    Line(end, ui.Offset(start.dx, end.dy), outlineColor: outlineColor).draw(pixels, size);
-    Line(ui.Offset(start.dx, end.dy), start, outlineColor: outlineColor).draw(pixels, size);
+    Line(start, ui.Offset(end.dx, start.dy), outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
+    Line(ui.Offset(end.dx, start.dy), end, outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
+    Line(end, ui.Offset(start.dx, end.dy), outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
+    Line(ui.Offset(start.dx, end.dy), start, outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
   }
 
   @override
@@ -65,5 +68,10 @@ class Rectangle extends Shape {
   void move(ui.Offset offset) {
     start += offset;
     end += offset;
+  }
+
+  @override
+  void accept(ShapeVisitor visitor) {
+    visitor.visitRectangle(this);
   }
 }
