@@ -11,7 +11,7 @@ class Polygon extends Shape {
   int thickness;
 
   Polygon(this.points, ui.Offset offset,
-      {this.closed = false, this.thickness = 1, super.color})
+      {this.closed = false, this.thickness = 1, super.outlineColor})
       : super(offset);
 
   @override
@@ -30,13 +30,13 @@ class Polygon extends Shape {
     for (var i = 0; i < points.length - 1; i++) {
       final point1 = points[i];
       final point2 = points[i + 1];
-      final line = Line(point1, point2, color: color, thickness: thickness);
+      final line = Line(point1, point2, outlineColor: outlineColor, thickness: thickness);
       line.draw(pixels, size, antiAlias: antiAlias);
     }
     if (closed) {
       final point1 = points[points.length - 1];
       final point2 = points[0];
-      final line = Line(point1, point2, color: color, thickness: thickness);
+      final line = Line(point1, point2, outlineColor: outlineColor, thickness: thickness);
       line.draw(pixels, size, antiAlias: antiAlias);
     }
   }
@@ -83,7 +83,7 @@ class Polygon extends Shape {
       return Polygon(points, ui.Offset.zero,
           closed: json['closed'],
           thickness: json['thickness'],
-          color: ui.Color(json['color']));
+          outlineColor: ui.Color(json['color']));
     }
     return null;
   }
@@ -100,7 +100,7 @@ class Polygon extends Shape {
       'points': points,
       'closed': closed,
       'thickness': thickness,
-      'color': color.value,
+      'color': outlineColor.value,
     };
   }
 }

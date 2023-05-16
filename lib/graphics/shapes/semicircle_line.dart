@@ -12,7 +12,7 @@ class SemicircleLine extends Shape {
   ui.Offset start;
   ui.Offset end;
 
-  SemicircleLine(this.start, this.end, this.N, {super.color}) : super(start);
+  SemicircleLine(this.start, this.end, this.N, {super.outlineColor}) : super(start);
 
   @override
   List<Handle> get handles => [
@@ -46,7 +46,7 @@ class SemicircleLine extends Shape {
 
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false}) {
-    var line = Line(start, end, color: color);
+    var line = Line(start, end, outlineColor: outlineColor);
     line.draw(pixels, size, antiAlias: antiAlias);
 
     var length = (end - start).distance;
@@ -67,7 +67,7 @@ class SemicircleLine extends Shape {
     for (var i = 0; i < N; i++) {
       var circle = Circle(
           start + (end - start) * (2 * i + 1) / (2 * N).toDouble(), radius,
-          color: color,
+          outlineColor: outlineColor,
           full: false,
           startAngle: angleStart,
           endAngle: angleEnd);
@@ -81,7 +81,7 @@ class SemicircleLine extends Shape {
         ui.Offset(json['start']['x'], json['start']['y']),
         ui.Offset(json['end']['x'], json['end']['y']),
         json['N'],
-        color: ui.Color(json['color']),
+        outlineColor: ui.Color(json['color']),
       );
     }
     return null;
@@ -94,7 +94,7 @@ class SemicircleLine extends Shape {
       'start': {'x': start.dx, 'y': start.dy},
       'end': {'x': end.dx, 'y': end.dy},
       'N': N,
-      'color': color.value,
+      'color': outlineColor.value,
     };
   }
 }

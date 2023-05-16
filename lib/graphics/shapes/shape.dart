@@ -8,11 +8,11 @@ import '../drawing.dart';
 abstract class Shape {
   ui.Offset offset;
 
-  Color color;
+  Color outlineColor;
 
   List<Handle> get handles => [];
 
-  Shape(this.offset, {this.color = Colors.black});
+  Shape(this.offset, {this.outlineColor = Colors.black});
 
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false});
 

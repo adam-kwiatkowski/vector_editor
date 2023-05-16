@@ -9,7 +9,7 @@ class Rectangle extends Shape {
   ui.Offset start;
   ui.Offset end;
 
-  Rectangle(this.start, this.end, {super.color}) : super(start);
+  Rectangle(this.start, this.end, {super.outlineColor}) : super(start);
 
   @override
   List<Handle> get handles => [
@@ -45,10 +45,10 @@ class Rectangle extends Shape {
 
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false}) {
-    Line(start, ui.Offset(end.dx, start.dy), color: color).draw(pixels, size);
-    Line(ui.Offset(end.dx, start.dy), end, color: color).draw(pixels, size);
-    Line(end, ui.Offset(start.dx, end.dy), color: color).draw(pixels, size);
-    Line(ui.Offset(start.dx, end.dy), start, color: color).draw(pixels, size);
+    Line(start, ui.Offset(end.dx, start.dy), outlineColor: outlineColor).draw(pixels, size);
+    Line(ui.Offset(end.dx, start.dy), end, outlineColor: outlineColor).draw(pixels, size);
+    Line(end, ui.Offset(start.dx, end.dy), outlineColor: outlineColor).draw(pixels, size);
+    Line(ui.Offset(start.dx, end.dy), start, outlineColor: outlineColor).draw(pixels, size);
   }
 
   @override
@@ -57,7 +57,7 @@ class Rectangle extends Shape {
       'type': 'rectangle',
       'start': {'dx': start.dx, 'dy': start.dy},
       'end': {'dx': end.dx, 'dy': end.dy},
-      'color': color.value
+      'color': outlineColor.value
     };
   }
 

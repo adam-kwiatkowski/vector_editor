@@ -16,7 +16,7 @@ class Circle extends Shape {
   double relativeStartAngle;
 
   Circle(ui.Offset offset, this.radius,
-      {super.color,
+      {super.outlineColor,
       this.full = true,
       this.startAngle = 0,
       this.endAngle = 2 * pi,
@@ -36,7 +36,7 @@ class Circle extends Shape {
 
   @override
   String toString() {
-    return 'Circle{offset: $offset, radius: $radius, color: $color, full: $full, startAngle: $startAngle, endAngle: $endAngle, relativeStartAngle: $relativeStartAngle}';
+    return 'Circle{offset: $offset, radius: $radius, color: $outlineColor, full: $full, startAngle: $startAngle, endAngle: $endAngle, relativeStartAngle: $relativeStartAngle}';
   }
 
   @override
@@ -110,7 +110,7 @@ class Circle extends Shape {
       if (alpha != 1.0) {
         Color backgroundColor = getBackgroundColor(pixels, size, x, y);
         Color blendedColor =
-            blendColors(color.withOpacity(alpha), backgroundColor);
+            blendColors(outlineColor.withOpacity(alpha), backgroundColor);
         pixels[index] = blendedColor.red;
         pixels[index + 1] = blendedColor.green;
         pixels[index + 2] = blendedColor.blue;
@@ -118,10 +118,10 @@ class Circle extends Shape {
         return;
       }
 
-      pixels[index] = color.red;
-      pixels[index + 1] = color.green;
-      pixels[index + 2] = color.blue;
-      pixels[index + 3] = color.alpha;
+      pixels[index] = outlineColor.red;
+      pixels[index + 1] = outlineColor.green;
+      pixels[index + 2] = outlineColor.blue;
+      pixels[index + 3] = outlineColor.alpha;
     }
   }
 
@@ -167,7 +167,7 @@ class Circle extends Shape {
       return Circle(
         Offset(json['offset']['dx'], json['offset']['dy']),
         json['radius'],
-        color: Color(json['color']),
+        outlineColor: Color(json['color']),
         full: json['full'],
         startAngle: json['startAngle'],
         endAngle: json['endAngle'],
@@ -182,7 +182,7 @@ class Circle extends Shape {
       'type': 'circle',
       'offset': {'dx': offset.dx, 'dy': offset.dy},
       'radius': radius,
-      'color': color.value,
+      'color': outlineColor.value,
       'full': full,
       'startAngle': startAngle,
       'endAngle': endAngle,

@@ -85,12 +85,9 @@ class LineTool extends Tool {
   LineTool() : super('Line', Icons.draw_outlined);
 
   @override
-  get cursor => SystemMouseCursors.precise;
-
-  @override
   void onPanStart(Offset offset, Drawing drawing) {
     final line = Line(offset, offset,
-        color: drawing.color, thickness: drawing.thickness);
+        outlineColor: drawing.color, thickness: drawing.thickness);
     drawing.addObject(line);
     drawing.selectObject(line);
   }
@@ -121,7 +118,7 @@ class CircleTool extends Tool {
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {
-    final circle = Circle(offset, 0, color: drawing.color);
+    final circle = Circle(offset, 0, outlineColor: drawing.color);
     drawing.deselectObject();
     drawing.addObject(circle);
     drawing.selectObject(circle);
@@ -143,7 +140,7 @@ class RectangleTool extends Tool {
   @override
   void onPanStart(Offset offset, Drawing drawing) {
     final rectangle = Rectangle(offset, offset,
-        color: drawing.color);
+        outlineColor: drawing.color);
     drawing.addObject(rectangle);
     drawing.selectObject(rectangle);
   }
@@ -195,7 +192,7 @@ class PolygonTool extends Tool {
       }
     } else {
       final polygon = Polygon([offset], offset,
-          color: drawing.color, thickness: drawing.thickness);
+          outlineColor: drawing.color, thickness: drawing.thickness);
       drawing.addObject(polygon);
       drawing.selectObject(polygon);
     }
@@ -207,7 +204,7 @@ class SemicircleLineTool extends Tool {
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {
-    final line = SemicircleLine(offset, offset, 5, color: drawing.color);
+    final line = SemicircleLine(offset, offset, 5, outlineColor: drawing.color);
     drawing.addObject(line);
     drawing.selectObject(line);
   }

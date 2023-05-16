@@ -12,7 +12,7 @@ class Line extends Shape {
   ui.Offset end;
   int thickness;
 
-  Line(this.start, this.end, {super.color, this.thickness = 1}) : super(start);
+  Line(this.start, this.end, {super.outlineColor, this.thickness = 1}) : super(start);
 
   @override
   List<Handle> get handles => [
@@ -33,7 +33,7 @@ class Line extends Shape {
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = true}) {
     if (thickness != 1) {
-      final brush = Brush.rounded(thickness, color: color);
+      final brush = Brush.rounded(thickness, color: outlineColor);
       brushLine(size, pixels, brush);
     } else if (antiAlias) {
       wuLine(size, pixels);
@@ -196,7 +196,7 @@ class Line extends Shape {
     }
     Color backgroundColor =
         getBackgroundColor(pixels, size, x.floor(), y.floor());
-    Color blendedColor = blendColors(color.withOpacity(c), backgroundColor);
+    Color blendedColor = blendColors(outlineColor.withOpacity(c), backgroundColor);
 
     pixels[index] = blendedColor.red;
     pixels[index + 1] = blendedColor.green;
@@ -216,7 +216,7 @@ class Line extends Shape {
       return Line(
         Offset(json['start']['dx'], json['start']['dy']),
         Offset(json['end']['dx'], json['end']['dy']),
-        color: Color(json['color']),
+        outlineColor: Color(json['color']),
         thickness: json['thickness'],
       );
     }
@@ -229,7 +229,7 @@ class Line extends Shape {
       'type': 'line',
       'start': {'dx': start.dx, 'dy': start.dy},
       'end': {'dx': end.dx, 'dy': end.dy},
-      'color': color.value,
+      'color': outlineColor.value,
       'thickness': thickness,
     };
   }

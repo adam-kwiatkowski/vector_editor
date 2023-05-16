@@ -34,7 +34,7 @@ class Drawing extends ChangeNotifier {
   set color(Color value) {
     _color = value;
     if (selectedObject != null) {
-      selectedObject!.color = value;
+      selectedObject!.outlineColor = value;
     }
     notifyListeners();
   }
@@ -140,6 +140,7 @@ class Drawing extends ChangeNotifier {
   }
 
   void removeObject(Shape object) {
+    if (object == selectedObject) deselectObject();
     _objects.remove(object);
     notifyListeners();
   }
