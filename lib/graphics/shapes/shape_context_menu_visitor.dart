@@ -54,6 +54,8 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
       buildMenuItem(Icons.color_lens_outlined, 'Change outline color', () {
         showOutlineColorPicker(polygon);
       }),
+      buildMenuItem(Icons.format_color_fill_outlined, 'Change fill color',
+          () => {showFillColorPicker(polygon)}),
       buildMenuItem(Icons.line_weight, 'Change thickness', () {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           showDialog(
@@ -68,6 +70,31 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
         });
       }),
     ]);
+  }
+
+  void showFillColorPicker(Polygon polygon) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('Fill color'),
+                content: SingleChildScrollView(
+                  child: BlockPicker(
+                    pickerColor: polygon.fillColor ?? Colors.transparent,
+                    onColorChanged: (fillColor) {
+                      polygon.fillColor = fillColor;
+                      drawing.updateObject(polygon);
+                    },
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ));
+    });
   }
 
   @override

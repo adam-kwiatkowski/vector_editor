@@ -32,5 +32,6 @@ abstract class Shape {
   void accept(ShapeVisitor visitor);
 
   static Shape? fromJson(Map<String, dynamic> json) => null;
+
   Map<String, dynamic> toJson();
 }

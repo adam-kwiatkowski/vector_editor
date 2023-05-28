@@ -14,7 +14,10 @@ class Polygon extends Shape {
   ui.Color? fillColor;
 
   Polygon(this.points, ui.Offset offset,
-      {this.closed = false, this.thickness = 1, this.fillColor, super.outlineColor})
+      {this.closed = false,
+      this.thickness = 1,
+      this.fillColor,
+      super.outlineColor})
       : super(offset);
 
   @override
@@ -33,14 +36,20 @@ class Polygon extends Shape {
     for (var i = 0; i < points.length - 1; i++) {
       final point1 = points[i];
       final point2 = points[i + 1];
-      final line = Line(point1, point2, outlineColor: outlineColor, thickness: thickness);
+      final line = Line(point1, point2,
+          outlineColor: outlineColor, thickness: thickness);
       line.draw(pixels, size, antiAlias: antiAlias);
     }
     if (closed) {
       final point1 = points[points.length - 1];
       final point2 = points[0];
-      final line = Line(point1, point2, outlineColor: outlineColor, thickness: thickness);
+      final line = Line(point1, point2,
+          outlineColor: outlineColor, thickness: thickness);
       line.draw(pixels, size, antiAlias: antiAlias);
+
+      if (fillColor != null) {
+        scanlineFill(pixels, size, fillColor!);
+      }
     }
   }
 
@@ -110,5 +119,59 @@ class Polygon extends Shape {
   @override
   void accept(ShapeVisitor visitor) {
     visitor.visitPolygon(this);
+  }
+
+  void drawPixel(
+      Uint8List pixels, ui.Size size, ui.Offset pos, ui.Color color) {
+    final x = pos.dx.toInt();
+    final y = pos.dy.toInt();
+    if (x < 0 || x >= size.width || y < 0 || y >= size.height) {
+      return;
+    }
+    final index = ((x + y * size.width) * 4).round();
+    pixels[index] = color.red;
+    pixels[index + 1] = color.green;
+    pixels[index + 2] = color.blue;
+    pixels[index + 3] = color.alpha;
+  }
+
+  void scanlineFill(Uint8List pixels, ui.Size size, ui.Color color) {
+    List<int> indices = List.generate(points.length, (index) => index);
+    indices.sort((a, b) => -points[a].dy.compareTo(points[b].dy));
+
+    List<List<ui.Offset>> aet = [];
+
+    int k = 0;
+    int i = indices[k];
+    var y = points[i].dy;
+    // var ymin = y;
+    var ymax = points[indices[indices.length - 1]].dy;
+    while (y < ymax) {
+      while (points[i].dy == y) {
+        var j = (i - 1 + points.length) % points.length;
+        if (points[j].dy > points[i].dy) {
+          aet.add([points[i], points[j]]);
+        }
+        j = (i + 1) % points.length;
+        if (points[j].dy > points[i].dy) {
+          aet.add([points[i], points[j]]);
+        }
+        k++;
+        i = indices[k];
+      }
+      aet.sort((a, b) => a[0].dx.compareTo(b[0].dx));
+      for (var j = 0; j < aet.length; j++) {
+        var x1 = aet[j][0].dx;
+        var x2 = aet[j + 1][0].dx;
+        for (var x = x1; x < x2; x++) {
+          drawPixel(pixels, size, ui.Offset(x, y), color);
+        }
+      }
+      y++;
+      aet.removeWhere((edge) => edge[1].dy == y);
+      for (var j = 0; j < aet.length; j++) {
+        aet[j][0] += ui.Offset(aet[j][1].dx / aet[j][1].dy, 1);
+      }
+    }
   }
 }

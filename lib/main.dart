@@ -78,7 +78,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 MyApp.themeMode.value =
                     isDark ? ThemeMode.light : ThemeMode.dark;
                 setState(() {
-                  drawing.canvasColor = isDark ? Colors.white : const Color(0xFF252428);
+                  drawing.canvasColor =
+                      isDark ? Colors.white : const Color(0xFF252428);
                 });
               },
             ),

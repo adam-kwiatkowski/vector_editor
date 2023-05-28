@@ -139,8 +139,7 @@ class RectangleTool extends Tool {
 
   @override
   void onPanStart(Offset offset, Drawing drawing) {
-    final rectangle = Rectangle(offset, offset,
-        outlineColor: drawing.color);
+    final rectangle = Rectangle(offset, offset, outlineColor: drawing.color);
     drawing.addObject(rectangle);
     drawing.selectObject(rectangle);
   }

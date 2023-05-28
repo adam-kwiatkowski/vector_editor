@@ -12,7 +12,8 @@ class Rectangle extends Shape {
   ui.Offset end;
   int thickness;
 
-  Rectangle(this.start, this.end, {super.outlineColor, this.thickness = 1}) : super(start);
+  Rectangle(this.start, this.end, {super.outlineColor, this.thickness = 1})
+      : super(start);
 
   @override
   List<Handle> get handles => [
@@ -48,10 +49,18 @@ class Rectangle extends Shape {
 
   @override
   void draw(Uint8List pixels, ui.Size size, {bool antiAlias = false}) {
-    Line(start, ui.Offset(end.dx, start.dy), outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
-    Line(ui.Offset(end.dx, start.dy), end, outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
-    Line(end, ui.Offset(start.dx, end.dy), outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
-    Line(ui.Offset(start.dx, end.dy), start, outlineColor: outlineColor, thickness: thickness).draw(pixels, size);
+    Line(start, ui.Offset(end.dx, start.dy),
+            outlineColor: outlineColor, thickness: thickness)
+        .draw(pixels, size);
+    Line(ui.Offset(end.dx, start.dy), end,
+            outlineColor: outlineColor, thickness: thickness)
+        .draw(pixels, size);
+    Line(end, ui.Offset(start.dx, end.dy),
+            outlineColor: outlineColor, thickness: thickness)
+        .draw(pixels, size);
+    Line(ui.Offset(start.dx, end.dy), start,
+            outlineColor: outlineColor, thickness: thickness)
+        .draw(pixels, size);
   }
 
   @override

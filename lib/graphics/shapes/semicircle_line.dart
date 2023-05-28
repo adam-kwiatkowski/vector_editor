@@ -14,7 +14,8 @@ class SemicircleLine extends Shape {
   ui.Offset start;
   ui.Offset end;
 
-  SemicircleLine(this.start, this.end, this.N, {super.outlineColor}) : super(start);
+  SemicircleLine(this.start, this.end, this.N, {super.outlineColor})
+      : super(start);
 
   @override
   List<Handle> get handles => [
