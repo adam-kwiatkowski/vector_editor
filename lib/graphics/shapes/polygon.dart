@@ -1,7 +1,9 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:vector_editor/graphics/image_data.dart';
+import 'package:vector_editor/graphics/shapes/rectangle.dart';
 import 'package:vector_editor/graphics/shapes/shape_visitor.dart';
 
 import '../drawing.dart';
@@ -14,6 +16,7 @@ class Polygon extends Shape {
   int thickness;
   ui.Color? fillColor;
   ImageData? _fillImage;
+  Rectangle? clipRectangle;
 
   ImageData? get fillImage => _fillImage;
 
@@ -29,6 +32,7 @@ class Polygon extends Shape {
       {this.closed = false,
       this.thickness = 1,
       this.fillColor,
+      this.clipRectangle,
       super.outlineColor,
       ImageData? fillImage})
       : super(offset) {
@@ -52,16 +56,12 @@ class Polygon extends Shape {
     for (var i = 0; i < points.length - 1; i++) {
       final point1 = points[i];
       final point2 = points[i + 1];
-      final line = Line(point1, point2,
-          outlineColor: outlineColor, thickness: thickness);
-      line.draw(pixels, size, antiAlias: antiAlias);
+      drawEdge(point1, point2, pixels, size, antiAlias);
     }
     if (closed) {
       final point1 = points[points.length - 1];
       final point2 = points[0];
-      final line = Line(point1, point2,
-          outlineColor: outlineColor, thickness: thickness);
-      line.draw(pixels, size, antiAlias: antiAlias);
+      drawEdge(point1, point2, pixels, size, antiAlias);
 
       if (fillColor != null) {
         scanlineFill(pixels, size, (x, y) => fillColor!);
@@ -89,6 +89,71 @@ class Polygon extends Shape {
         });
       }
     }
+  }
+
+  void drawEdge(ui.Offset point1, ui.Offset point2, Uint8List pixels,
+      ui.Size size, bool antiAlias) {
+    if (clipRectangle == null) {
+      final line = Line(point1, point2,
+          outlineColor: outlineColor, thickness: thickness);
+      line.draw(pixels, size, antiAlias: antiAlias);
+    } else {
+      var lineClipping = liangBarsky(
+        point1.dx,
+        point1.dy,
+        point2.dx,
+        point2.dy,
+        clipRectangle!.left,
+        clipRectangle!.top,
+        clipRectangle!.right,
+        clipRectangle!.bottom,
+      );
+      if (lineClipping == null) {
+        return;
+      }
+      final line = Line(ui.Offset(lineClipping[0], lineClipping[1]),
+          ui.Offset(lineClipping[2], lineClipping[3]),
+          outlineColor: outlineColor, thickness: thickness);
+      line.draw(pixels, size, antiAlias: antiAlias);
+    }
+  }
+
+  List<double>? liangBarsky(double x1, double y1, double x2, double y2,
+      double left, double top, double right, double bottom) {
+    double t0 = 0.0;
+    double t1 = 1.0;
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+
+    final List<double> p = [-dx, dx, -dy, dy];
+    final List<double> q = [x1 - left, right - x1, y1 - top, bottom - y1];
+
+    for (int i = 0; i < 4; i++) {
+      if (p[i] == 0) {
+        if (q[i] < 0) {
+          return null;
+        }
+        continue;
+      }
+
+      double t = q[i] / p[i];
+      if (p[i] < 0) {
+        t0 = max(t0, t);
+      } else {
+        t1 = min(t1, t);
+      }
+
+      if (t0 > t1) {
+        return null;
+      }
+    }
+
+    return [
+      x1 + t0 * dx,
+      y1 + t0 * dy,
+      x1 + t1 * dx,
+      y1 + t1 * dy,
+    ];
   }
 
   void updateBoundingBox() {

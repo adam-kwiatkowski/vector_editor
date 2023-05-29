@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cross_file/cross_file.dart';
 import 'package:desktop_drop/desktop_drop.dart';
@@ -57,6 +58,14 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
   @override
   void visitPolygon(Polygon polygon) {
     _items.addAll([
+      polygon.clipRectangle != null
+          ? buildMenuItem(
+              Icons.cancel_outlined,
+              'Remove clip',
+              () =>
+                  {polygon.clipRectangle = null, drawing.updateObject(polygon)})
+          : buildMenuItem(Icons.crop_square_outlined, 'Clip to rectangle',
+              () => showClipRectanglePicker(polygon)),
       buildMenuItem(Icons.image_outlined, 'Fill with image',
           () => showImagePicker(polygon)),
       buildMenuItem(Icons.color_lens_outlined, 'Change outline color',
@@ -181,6 +190,113 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
           builder: (context) =>
               FillImageDialog(drawing: drawing, polygon: polygon));
     });
+  }
+
+  showClipRectanglePicker(Polygon polygon) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+          context: context,
+          builder: (context) =>
+              ClipRectangleDialog(drawing: drawing, polygon: polygon));
+    });
+  }
+}
+
+class ClipRectangleDialog extends StatefulWidget {
+  final Drawing drawing;
+  final Polygon polygon;
+
+  const ClipRectangleDialog(
+      {super.key, required this.drawing, required this.polygon});
+
+  @override
+  State<ClipRectangleDialog> createState() => _ClipRectangleDialogState();
+}
+
+class _ClipRectangleDialogState extends State<ClipRectangleDialog> {
+  Rectangle? clipRectangle;
+
+  // show a rounded rectangle at the top of the screen with two buttons: cancel and done
+  // use a gesture detector to detect taps on the screen
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+        onTapDown: (details) {
+          var pos = details.localPosition;
+          pos -= Offset(0, AppBar().preferredSize.height);
+          final Shape? shape = widget.drawing.getObjectAt(pos);
+          if (shape == null) {
+            setState(() {
+              clipRectangle = null;
+            });
+          } else if (shape is Rectangle) {
+            setState(() {
+              clipRectangle = shape;
+            });
+          }
+        },
+        child: Dialog.fullscreen(
+            backgroundColor: Colors.transparent,
+            child: Stack(children: [
+              Positioned(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Tap on a rectangle to clip the polygon',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(color: Colors.white),
+                    ),
+                    const SizedBox(height: 12),
+                    Card(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: IconButton(
+                              icon: const Icon(Icons.cancel_outlined),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: IconButton(
+                              icon: const Icon(Icons.done_outlined),
+                              onPressed: () {
+                                widget.polygon.clipRectangle = clipRectangle;
+                                widget.drawing.updateObject(widget.polygon);
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+              if (clipRectangle != null)
+                Positioned(
+                    top: min(clipRectangle!.start.dy, clipRectangle!.end.dy) +
+                        AppBar().preferredSize.height,
+                    left: min(clipRectangle!.start.dx, clipRectangle!.end.dx),
+                    child: Container(
+                      width: (clipRectangle!.start.dx - clipRectangle!.end.dx)
+                          .abs(),
+                      height: (clipRectangle!.start.dy - clipRectangle!.end.dy)
+                          .abs(),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ))
+            ])));
   }
 }
 

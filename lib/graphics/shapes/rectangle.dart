@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -11,6 +12,17 @@ class Rectangle extends Shape {
   ui.Offset start;
   ui.Offset end;
   int thickness;
+
+  ui.Size get size =>
+      ui.Size((end.dx - start.dx).abs(), (end.dy - start.dy).abs());
+
+  double get left => min(start.dx, end.dx);
+
+  double get top => min(start.dy, end.dy);
+
+  double get right => max(start.dx, end.dx);
+
+  double get bottom => max(start.dy, end.dy);
 
   Rectangle(this.start, this.end, {super.outlineColor, this.thickness = 1})
       : super(start);
