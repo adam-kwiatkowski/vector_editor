@@ -21,59 +21,58 @@ class DrawingWidgetState extends State<DrawingWidget> {
   Widget build(BuildContext context) {
     final tool = presetTools[widget.selectedTool];
     return LayoutBuilder(
-      builder: (context, constraints) =>
-          Consumer<Drawing>(
-            builder: (context, drawing, child) {
-              drawing.size = Size(constraints.maxWidth, constraints.maxHeight);
-              return RepaintBoundary(
-                child: GestureDetector(
-                  onTapDown: (details) {
-                    tool.onTapDown(details.localPosition, drawing);
-                  },
-                  onTapUp: (details) {
-                    tool.onTapUp(details.localPosition, drawing);
-                  },
-                  onPanStart: (details) {
-                    tool.onPanStart(details.localPosition, drawing);
-                  },
-                  onPanUpdate: (details) {
-                    tool.onPanUpdate(details.localPosition, drawing);
-                  },
-                  onPanEnd: (details) {
-                    tool.onPanEnd(drawing);
-                  },
-                  onSecondaryTapDown: (details) {
-                    showContextMenu(details, drawing, context);
-                  },
-                  child: FutureBuilder<ui.Image>(
-                    future: drawing.toImage(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Stack(children: [
-                          RawImage(
-                            alignment: Alignment.topLeft,
-                            fit: BoxFit.none,
-                            image: snapshot.data!,
-                            width: drawing.size.width,
-                            height: drawing.size.height,
-                            filterQuality: FilterQuality.none,
-                          ),
-                          // Text(drawing.toString())
-                        ]);
-                      } else {
-                        return const SizedBox();
-                      }
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
+      builder: (context, constraints) => Consumer<Drawing>(
+        builder: (context, drawing, child) {
+          drawing.size = Size(constraints.maxWidth, constraints.maxHeight);
+          return RepaintBoundary(
+            child: GestureDetector(
+              onTapDown: (details) {
+                tool.onTapDown(details.localPosition, drawing);
+              },
+              onTapUp: (details) {
+                tool.onTapUp(details.localPosition, drawing);
+              },
+              onPanStart: (details) {
+                tool.onPanStart(details.localPosition, drawing);
+              },
+              onPanUpdate: (details) {
+                tool.onPanUpdate(details.localPosition, drawing);
+              },
+              onPanEnd: (details) {
+                tool.onPanEnd(drawing);
+              },
+              onSecondaryTapDown: (details) {
+                showContextMenu(details, drawing, context);
+              },
+              child: FutureBuilder<ui.Image>(
+                future: drawing.toImage(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Stack(children: [
+                      RawImage(
+                        alignment: Alignment.topLeft,
+                        fit: BoxFit.none,
+                        image: snapshot.data!,
+                        width: drawing.size.width,
+                        height: drawing.size.height,
+                        filterQuality: FilterQuality.none,
+                      ),
+                      // Text(drawing.toString())
+                    ]);
+                  } else {
+                    return const SizedBox();
+                  }
+                },
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
-  void showContextMenu(TapDownDetails details, Drawing drawing,
-      BuildContext context) {
+  void showContextMenu(
+      TapDownDetails details, Drawing drawing, BuildContext context) {
     var pos = details.globalPosition;
 
     drawing.selectObjectAt(details.localPosition);
@@ -85,10 +84,7 @@ class DrawingWidgetState extends State<DrawingWidget> {
           title: const Text('Delete'),
           dense: true,
           contentPadding: EdgeInsets.zero,
-          titleTextStyle: Theme
-              .of(context)
-              .textTheme
-              .labelLarge,
+          titleTextStyle: Theme.of(context).textTheme.labelLarge,
         ),
         onTap: () {
           if (drawing.selectedObject != null) {
@@ -100,8 +96,8 @@ class DrawingWidgetState extends State<DrawingWidget> {
     ];
 
     if (drawing.selectedObject != null) {
-      ShapeContextMenuVisitor visitor = ShapeContextMenuVisitor(
-          context, drawing);
+      ShapeContextMenuVisitor visitor =
+          ShapeContextMenuVisitor(context, drawing);
       drawing.selectedObject!.accept(visitor);
       menuOptions.addAll(visitor.items);
     }

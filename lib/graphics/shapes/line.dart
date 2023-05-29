@@ -17,8 +17,7 @@ class Line extends Shape {
       : super(start);
 
   @override
-  List<Handle> get handles =>
-      [
+  List<Handle> get handles => [
         Handle(
           start,
           onMove: (offset) {
@@ -184,8 +183,8 @@ class Line extends Shape {
     }
   }
 
-  void _drawPixel(ui.Size size, Uint8List pixels, double x, double y,
-      double c) {
+  void _drawPixel(
+      ui.Size size, Uint8List pixels, double x, double y, double c) {
     final index = (x.floor() + y.floor() * size.width).toInt() * 4;
     if (index < 0 ||
         index >= pixels.length ||
@@ -198,9 +197,9 @@ class Line extends Shape {
       return;
     }
     Color backgroundColor =
-    getBackgroundColor(pixels, size, x.floor(), y.floor());
-    Color blendedColor = blendColors(
-        outlineColor.withOpacity(c), backgroundColor);
+        getBackgroundColor(pixels, size, x.floor(), y.floor());
+    Color blendedColor =
+        blendColors(outlineColor.withOpacity(c), backgroundColor);
 
     pixels[index] = blendedColor.red;
     pixels[index + 1] = blendedColor.green;

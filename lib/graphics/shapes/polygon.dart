@@ -136,42 +136,65 @@ class Polygon extends Shape {
   }
 
   void scanlineFill(Uint8List pixels, ui.Size size, ui.Color color) {
-    List<int> indices = List.generate(points.length, (index) => index);
-    indices.sort((a, b) => -points[a].dy.compareTo(points[b].dy));
+    List<int> sortedIndices = List<int>.generate(points.length, (i) => i);
+    sortedIndices.sort((a, b) {
+      int yCompare = points[a].dy.compareTo(points[b].dy);
+      return yCompare == 0 ? points[a].dx.compareTo(points[b].dx) : yCompare;
+    });
 
-    List<List<ui.Offset>> aet = [];
+    List<EdgeEntry> aet = [];
 
-    int k = 0;
-    int i = indices[k];
-    var y = points[i].dy;
-    // var ymin = y;
-    var ymax = points[indices[indices.length - 1]].dy;
-    while (y < ymax) {
-      while (points[i].dy == y) {
-        var j = (i - 1 + points.length) % points.length;
-        if (points[j].dy > points[i].dy) {
-          aet.add([points[i], points[j]]);
+    for (int y = 0; y < size.height.toInt(); y++) {
+      while (sortedIndices.isNotEmpty &&
+          points[sortedIndices.first].dy.toInt() == y) {
+        int currentIndex = sortedIndices.removeAt(0);
+        int prevIndex = (currentIndex - 1 + points.length) % points.length;
+        int nextIndex = (currentIndex + 1) % points.length;
+
+        ui.Offset currentPoint = points[currentIndex];
+        if (points[nextIndex].dy > currentPoint.dy) {
+          aet.add(createEdge(points[currentIndex], points[nextIndex]));
         }
-        j = (i + 1) % points.length;
-        if (points[j].dy > points[i].dy) {
-          aet.add([points[i], points[j]]);
-        }
-        k++;
-        i = indices[k];
-      }
-      aet.sort((a, b) => a[0].dx.compareTo(b[0].dx));
-      for (var j = 0; j < aet.length; j++) {
-        var x1 = aet[j][0].dx;
-        var x2 = aet[j + 1][0].dx;
-        for (var x = x1; x < x2; x++) {
-          drawPixel(pixels, size, ui.Offset(x, y), color);
+        if (points[prevIndex].dy > currentPoint.dy) {
+          aet.add(createEdge(points[currentIndex], points[prevIndex]));
         }
       }
-      y++;
-      aet.removeWhere((edge) => edge[1].dy == y);
-      for (var j = 0; j < aet.length; j++) {
-        aet[j][0] += ui.Offset(aet[j][1].dx / aet[j][1].dy, 1);
+
+      aet.removeWhere((edge) => edge.yMax.toInt() == y);
+      for (var edge in aet) {
+        edge.x += edge.dx;
+      }
+
+      aet.sort((a, b) => (a.x).compareTo(b.x));
+
+      for (int i = 0; i < aet.length; i += 2) {
+        int startX = aet[i].x.toInt();
+        int endX = aet[i + 1].x.toInt();
+        for (int x = startX; x <= endX; x++) {
+          drawPixel(pixels, size, ui.Offset(x.toDouble(), y.toDouble()), color);
+        }
       }
     }
   }
+
+  EdgeEntry createEdge(ui.Offset start, ui.Offset end) {
+    double dx = (end.dx - start.dx) / (end.dy - start.dy);
+    return EdgeEntry(
+      x: start.dx,
+      yMax: end.dy,
+      dx: dx,
+    );
+  }
+}
+
+class EdgeEntry {
+  double x;
+  double yMax;
+  double dx;
+
+  EdgeEntry({
+    required this.x,
+    required this.yMax,
+    required this.dx,
+  });
 }
