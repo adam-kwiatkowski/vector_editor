@@ -1,6 +1,12 @@
+import 'dart:io';
+
+import 'package:cross_file/cross_file.dart';
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:vector_editor/graphics/drawing.dart';
+import 'package:vector_editor/graphics/image_data.dart';
 import 'package:vector_editor/graphics/shapes/circle.dart';
 import 'package:vector_editor/graphics/shapes/line.dart';
 import 'package:vector_editor/graphics/shapes/polygon.dart';
@@ -51,11 +57,12 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
   @override
   void visitPolygon(Polygon polygon) {
     _items.addAll([
-      buildMenuItem(Icons.color_lens_outlined, 'Change outline color', () {
-        showOutlineColorPicker(polygon);
-      }),
+      buildMenuItem(Icons.image_outlined, 'Fill with image',
+          () => showImagePicker(polygon)),
+      buildMenuItem(Icons.color_lens_outlined, 'Change outline color',
+          () => showOutlineColorPicker(polygon)),
       buildMenuItem(Icons.format_color_fill_outlined, 'Change fill color',
-          () => {showFillColorPicker(polygon)}),
+          () => showFillColorPicker(polygon)),
       buildMenuItem(Icons.line_weight, 'Change thickness', () {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           showDialog(
@@ -70,31 +77,6 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
         });
       }),
     ]);
-  }
-
-  void showFillColorPicker(Polygon polygon) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                title: const Text('Fill color'),
-                content: SingleChildScrollView(
-                  child: BlockPicker(
-                    pickerColor: polygon.fillColor ?? Colors.transparent,
-                    onColorChanged: (fillColor) {
-                      polygon.fillColor = fillColor;
-                      drawing.updateObject(polygon);
-                    },
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close'),
-                  ),
-                ],
-              ));
-    });
   }
 
   @override
@@ -125,6 +107,32 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
         buildMenuItem(Icons.color_lens_outlined, 'Change outline color', () {
       showOutlineColorPicker(semicircleLine);
     }));
+  }
+
+  void showFillColorPicker(Polygon polygon) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('Fill color'),
+                content: SingleChildScrollView(
+                  child: BlockPicker(
+                    pickerColor: polygon.fillColor ?? Colors.transparent,
+                    onColorChanged: (fillColor) {
+                      polygon.fillColor = fillColor;
+                      polygon.fillImage = null;
+                      drawing.updateObject(polygon);
+                    },
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ));
+    });
   }
 
   void showOutlineColorPicker(Shape shape) {
@@ -164,6 +172,182 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
         titleTextStyle: Theme.of(context).textTheme.labelLarge,
       ),
     );
+  }
+
+  showImagePicker(Polygon polygon) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+          context: context,
+          builder: (context) =>
+              FillImageDialog(drawing: drawing, polygon: polygon));
+    });
+  }
+}
+
+class FillImageDialog extends StatefulWidget {
+  const FillImageDialog({
+    super.key,
+    required this.drawing,
+    required this.polygon,
+  });
+
+  final Drawing drawing;
+  final Polygon polygon;
+
+  @override
+  State<FillImageDialog> createState() => _FillImageDialogState();
+}
+
+class _FillImageDialogState extends State<FillImageDialog> {
+  ImageData? image;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Fill with image'),
+      content: SingleChildScrollView(
+        child: ImagePicker(
+          onImagePicked: (imageFile) async {
+            var bytes = await imageFile.readAsBytes();
+            decodeImageFromList(bytes).then((image) {
+              var width = image.width;
+              var height = image.height;
+              image.toByteData().then((data) {
+                var imageData = ImageData(
+                  data!.buffer.asUint8List(),
+                  width,
+                  height,
+                );
+                setState(() {
+                  this.image = imageData;
+                });
+              });
+            });
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            widget.polygon.fillImage = image;
+            widget.polygon.fillColor = null;
+            widget.drawing.updateObject(widget.polygon);
+            Navigator.of(context).pop();
+          },
+          child: const Text('Submit'),
+        ),
+      ],
+    );
+  }
+}
+
+class ImagePicker extends StatefulWidget {
+  final Function(XFile) onImagePicked;
+
+  const ImagePicker({Key? key, required this.onImagePicked}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _ImagePickerState();
+}
+
+class _ImagePickerState extends State<ImagePicker> {
+  XFile? _imageFile;
+  bool _isDragging = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropTarget(
+      onDragEntered: (details) {
+        setState(() {
+          _isDragging = true;
+        });
+      },
+      onDragExited: (details) {
+        setState(() {
+          _isDragging = false;
+        });
+      },
+      onDragDone: (details) async {
+        setState(() {
+          _isDragging = false;
+          _imageFile = details.files.first;
+          if (_imageFile!.path.endsWith('.png') ||
+              _imageFile!.path.endsWith('.jpg')) {
+            widget.onImagePicked(_imageFile!);
+          } else {
+            _imageFile = null;
+          }
+        });
+      },
+      child: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: 1,
+            child: Container(
+              // rounded dashed border
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _isDragging
+                      ? Theme.of(context).primaryColor
+                      : Colors.transparent,
+                  width: 1,
+                  style: BorderStyle.solid,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 30),
+                  _buildImage(Theme.of(context).primaryColor),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Drop an image here',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  TextButton(
+                      onPressed: () => _showFilePicker(),
+                      child: const Text('or select from files')),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _buildImage(Color iconColor) {
+    if (_imageFile != null) {
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        width: 300,
+        height: 300,
+        clipBehavior: Clip.antiAlias,
+        child: Image.file(File(_imageFile!.path), fit: BoxFit.cover),
+      );
+    } else if (_isDragging) {
+      return Icon(Icons.file_upload, color: iconColor);
+    } else {
+      return Icon(Icons.image_outlined, color: iconColor);
+    }
+  }
+
+  _showFilePicker() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.image);
+    if (result != null) {
+      setState(() {
+        _imageFile = XFile(result.files.single.path!);
+        widget.onImagePicked(_imageFile!);
+      });
+    }
   }
 }
 

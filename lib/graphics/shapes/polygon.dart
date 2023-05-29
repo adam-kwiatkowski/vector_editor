@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:vector_editor/graphics/image_data.dart';
 import 'package:vector_editor/graphics/shapes/shape_visitor.dart';
 
 import '../drawing.dart';
@@ -12,13 +13,27 @@ class Polygon extends Shape {
   bool closed;
   int thickness;
   ui.Color? fillColor;
+  ImageData? _fillImage;
+
+  ImageData? get fillImage => _fillImage;
+
+  set fillImage(ImageData? value) {
+    _fillImage = value;
+    updateBoundingBox();
+  }
+
+  ui.Offset? topLeft;
+  ui.Offset? bottomRight;
 
   Polygon(this.points, ui.Offset offset,
       {this.closed = false,
       this.thickness = 1,
       this.fillColor,
-      super.outlineColor})
-      : super(offset);
+      super.outlineColor,
+      ImageData? fillImage})
+      : super(offset) {
+    this.fillImage = fillImage;
+  }
 
   @override
   List<Handle> get handles {
@@ -26,6 +41,7 @@ class Polygon extends Shape {
     for (var i = 0; i < points.length; i++) {
       handles.add(Handle(points[i], onMove: (offset) {
         points[i] += offset;
+        if (fillImage != null) updateBoundingBox();
       }));
     }
     return handles;
@@ -48,9 +64,60 @@ class Polygon extends Shape {
       line.draw(pixels, size, antiAlias: antiAlias);
 
       if (fillColor != null) {
-        scanlineFill(pixels, size, fillColor!);
+        scanlineFill(pixels, size, (x, y) => fillColor!);
+      } else if (fillImage != null) {
+        scanlineFill(pixels, size, (x, y) {
+          final top = topLeft!.dy;
+          final left = topLeft!.dx;
+          final bottom = bottomRight!.dy;
+          final right = bottomRight!.dx;
+
+          var u = (x - left) / (right - left) * fillImage!.width;
+          var v = (y - top) / (bottom - top) * fillImage!.height;
+
+          if (u < 0) {
+            u = 0;
+          } else if (u >= fillImage!.width) {
+            u = fillImage!.width - 1;
+          }
+          if (v < 0) {
+            v = 0;
+          } else if (v >= fillImage!.height) {
+            v = fillImage!.height - 1;
+          }
+          return fillImage!.getPixel(u.toInt(), v.toInt());
+        });
       }
     }
+  }
+
+  void updateBoundingBox() {
+    final top = points.reduce((value, element) {
+      if (element.dy < value.dy) {
+        return element;
+      }
+      return value;
+    }).dy;
+    final bottom = points.reduce((value, element) {
+      if (element.dy > value.dy) {
+        return element;
+      }
+      return value;
+    }).dy;
+    final left = points.reduce((value, element) {
+      if (element.dx < value.dx) {
+        return element;
+      }
+      return value;
+    }).dx;
+    final right = points.reduce((value, element) {
+      if (element.dx > value.dx) {
+        return element;
+      }
+      return value;
+    }).dx;
+    topLeft = ui.Offset(left, top);
+    bottomRight = ui.Offset(right, bottom);
   }
 
   @override
@@ -74,6 +141,12 @@ class Polygon extends Shape {
       points[i] += offset;
     }
     this.offset += offset;
+    if (topLeft != null) {
+      topLeft = topLeft! + offset;
+    }
+    if (bottomRight != null) {
+      bottomRight = bottomRight! + offset;
+    }
   }
 
   void removePointAt(ui.Offset offset) {
@@ -92,10 +165,18 @@ class Polygon extends Shape {
         final point = json['points'][i];
         points.add(ui.Offset(point['x'], point['y']));
       }
+      var fillImage = json['fillImage'] != null
+          ? ImageData.fromJson(json['fillImage'])
+          : null;
+      var fillColor =
+          json['fillColor'] != null ? ui.Color(json['fillColor']) : null;
+
       return Polygon(points, ui.Offset.zero,
           closed: json['closed'],
           thickness: json['thickness'],
-          outlineColor: ui.Color(json['color']));
+          outlineColor: ui.Color(json['color']),
+          fillColor: fillColor,
+          fillImage: fillImage);
     }
     return null;
   }
@@ -113,6 +194,8 @@ class Polygon extends Shape {
       'closed': closed,
       'thickness': thickness,
       'color': outlineColor.value,
+      'fillColor': fillColor?.value,
+      'fillImage': fillImage?.toJson()
     };
   }
 
@@ -135,7 +218,8 @@ class Polygon extends Shape {
     pixels[index + 3] = color.alpha;
   }
 
-  void scanlineFill(Uint8List pixels, ui.Size size, ui.Color color) {
+  void scanlineFill(
+      Uint8List pixels, ui.Size size, ui.Color Function(int x, int y) color) {
     List<int> sortedIndices = List<int>.generate(points.length, (i) => i);
     sortedIndices.sort((a, b) {
       int yCompare = points[a].dy.compareTo(points[b].dy);
@@ -171,7 +255,8 @@ class Polygon extends Shape {
         int startX = aet[i].x.toInt();
         int endX = aet[i + 1].x.toInt();
         for (int x = startX; x <= endX; x++) {
-          drawPixel(pixels, size, ui.Offset(x.toDouble(), y.toDouble()), color);
+          drawPixel(
+              pixels, size, ui.Offset(x.toDouble(), y.toDouble()), color(x, y));
         }
       }
     }
