@@ -118,6 +118,30 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
     }));
   }
 
+  var colorsList = [
+    Colors.red,
+    Colors.pink,
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.indigo,
+    Colors.blue,
+    Colors.lightBlue,
+    Colors.cyan,
+    Colors.teal,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow,
+    Colors.amber,
+    Colors.orange,
+    Colors.deepOrange,
+    Colors.brown,
+    Colors.grey,
+    Colors.blueGrey,
+    Colors.black,
+    Colors.transparent
+  ];
+
   void showFillColorPicker(Polygon polygon) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
@@ -127,8 +151,10 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
                 content: SingleChildScrollView(
                   child: BlockPicker(
                     pickerColor: polygon.fillColor ?? Colors.transparent,
+                    availableColors: colorsList,
                     onColorChanged: (fillColor) {
-                      polygon.fillColor = fillColor;
+                      polygon.fillColor =
+                          fillColor == Colors.transparent ? null : fillColor;
                       polygon.fillImage = null;
                       drawing.updateObject(polygon);
                     },
@@ -153,6 +179,7 @@ class ShapeContextMenuVisitor extends ShapeVisitor {
                 content: SingleChildScrollView(
                   child: BlockPicker(
                     pickerColor: shape.outlineColor,
+                    availableColors: colorsList,
                     onColorChanged: (color) {
                       shape.outlineColor = color;
                       drawing.updateObject(shape);

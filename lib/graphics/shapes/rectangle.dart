@@ -75,6 +75,17 @@ class Rectangle extends Shape {
         .draw(pixels, size);
   }
 
+  static Shape? fromJson(Map<String, dynamic> json) {
+    if (json['type'] == 'rectangle') {
+      return Rectangle(
+        ui.Offset(json['start']['dx'], json['start']['dy']),
+        ui.Offset(json['end']['dx'], json['end']['dy']),
+        outlineColor: ui.Color(json['color']),
+      );
+    }
+    return null;
+  }
+
   @override
   Map<String, dynamic> toJson() {
     return {

@@ -236,12 +236,17 @@ class Polygon extends Shape {
       var fillColor =
           json['fillColor'] != null ? ui.Color(json['fillColor']) : null;
 
+      Rectangle? clipRectangle = (json['clipRectangle'] != null
+          ? Rectangle.fromJson(json['clipRectangle'])
+          : null) as Rectangle?;
+
       return Polygon(points, ui.Offset.zero,
           closed: json['closed'],
           thickness: json['thickness'],
           outlineColor: ui.Color(json['color']),
           fillColor: fillColor,
-          fillImage: fillImage);
+          fillImage: fillImage,
+          clipRectangle: clipRectangle);
     }
     return null;
   }
@@ -260,7 +265,8 @@ class Polygon extends Shape {
       'thickness': thickness,
       'color': outlineColor.value,
       'fillColor': fillColor?.value,
-      'fillImage': fillImage?.toJson()
+      'fillImage': fillImage?.toJson(),
+      'clipRectangle': clipRectangle?.toJson(),
     };
   }
 

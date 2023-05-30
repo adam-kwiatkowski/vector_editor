@@ -1,3 +1,5 @@
+import 'package:vector_editor/graphics/shapes/rectangle.dart';
+
 import 'circle.dart';
 import 'line.dart';
 import 'polygon.dart';
@@ -23,6 +25,8 @@ class JsonConverter {
         return Polygon.fromJson(json);
       case 'semicircle_line':
         return SemicircleLine.fromJson(json);
+      case 'rectangle':
+        return Rectangle.fromJson(json);
       default:
         return null;
     }
@@ -38,6 +42,8 @@ class JsonConverter {
         return (shape as Polygon).toJson();
       case SemicircleLine:
         return (shape as SemicircleLine).toJson();
+      case Rectangle:
+        return (shape as Rectangle).toJson();
       default:
         return {};
     }
